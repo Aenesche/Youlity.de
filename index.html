@@ -74,9 +74,10 @@
 
   // --- Label (center disc) ---
   const labelGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.08, 40);
-  const labelMat = new THREE.MeshStandardMaterial({ color: 0x6633aa, roughness: 0.6, metalness: 0.2 });
-  record.add(new THREE.Mesh(labelGeo, labelMat));
-
+const texture = new THREE.TextureLoader().load('logo.png');
+const labelMat = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.6, metalness: 0.2 });
+record.add(new THREE.Mesh(labelGeo, labelMat));
+  
   // --- Center hole ---
   const holeGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.12, 20);
   const holeMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
