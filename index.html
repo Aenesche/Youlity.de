@@ -39,5 +39,86 @@
       <a href="mailto:admin@aenesche.de">admin@aenesche.de</a>
     </p>
   </div>
+  <!-- VINYL BACKGROUND -->
+<script>
+(function() {
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.18;';
+  document.body.appendChild(canvas);
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.z = 5;
+
+  // --- Record body ---
+  const recordGeo = new THREE.CylinderGeometry(1.5, 1.5, 0.07, 64);
+  const recordMat = new THREE.MeshStandardMaterial({ color: 0x1a1a2e, roughness: 0.3, metalness: 0.7 });
+  const record = new THREE.Mesh(recordGeo, recordMat);
+
+  // --- Grooves (rings) ---
+  for (let i = 0; i < 12; i++) {
+    const r = 0.55 + i * 0.08;
+    const geo = new THREE.TorusGeometry(r, 0.005, 6, 80);
+    const mat = new THREE.MeshStandardMaterial({ color: 0x2a2a3e, roughness: 0.5 });
+    record.add(new THREE.Mesh(geo, mat));
+  }
+
+  // --- Label (center disc) ---
+  const labelGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.08, 40);
+  const labelMat = new THREE.MeshStandardMaterial({ color: 0x6633aa, roughness: 0.6, metalness: 0.2 });
+  record.add(new THREE.Mesh(labelGeo, labelMat));
+
+  // --- Center hole ---
+  const holeGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.12, 20);
+  const holeMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
+  record.add(new THREE.Mesh(holeGeo, holeMat));
+
+  scene.add(record);
+
+  // --- Lights ---
+  scene.add(Object.assign(new THREE.AmbientLight(0xffffff), { intensity: 0.4 }));
+  const dir = new THREE.DirectionalLight(0xaa88ff, 1.8);
+  dir.position.set(3, 5, 4);
+  scene.add(dir);
+  const rim = new THREE.DirectionalLight(0x4422aa, 1.0);
+  rim.position.set(-4, -2, -3);
+  scene.add(rim);
+
+  // --- Bounce state ---
+  const bounds = { x: 2.8, y: 1.6 };
+  const pos = { x: 0, y: 0 };
+  const vel = { x: 0.012, y: 0.009 };
+  const tilt = { x: 0.4, y: -0.3 };
+
+  function animate() {
+    requestAnimationFrame(animate);
+
+    // Spin
+    record.rotation.y += 0.018;
+
+    // Bounce
+    pos.x += vel.x;
+    pos.y += vel.y;
+    if (Math.abs(pos.x) > bounds.x) { vel.x *= -1; tilt.y *= -1; }
+    if (Math.abs(pos.y) > bounds.y) { vel.y *= -1; tilt.x *= -1; }
+    record.position.set(pos.x, pos.y, 0);
+    record.rotation.x += (tilt.x - record.rotation.x) * 0.02;
+    record.rotation.z += (tilt.y * 0.3 - record.rotation.z) * 0.02;
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+})();
+</script>
 </body>
 </html>
