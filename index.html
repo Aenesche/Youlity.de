@@ -46,7 +46,7 @@
 <script>
 (function() {
   const canvas = document.createElement('canvas');
-  canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.18;';
+  canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.28;';
   document.body.appendChild(canvas);
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -67,7 +67,9 @@
     const r = 0.55 + i * 0.08;
     const geo = new THREE.TorusGeometry(r, 0.005, 6, 80);
     const mat = new THREE.MeshStandardMaterial({ color: 0x2a2a3e, roughness: 0.5 });
-    record.add(new THREE.Mesh(geo, mat));
+    const ring = new THREE.Mesh(geo, mat);
+    ring.rotation.x = Math.PI / 2;
+    record.add(ring);
   }
 
   // --- Label (center disc) ---
