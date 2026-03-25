@@ -86,7 +86,7 @@ record.add(new THREE.Mesh(labelGeo, labelMat));
   scene.add(record);
 
   // --- Lights ---
-  scene.add(Object.assign(new THREE.AmbientLight(0xffffff), { intensity: 0.4 }));
+  scene.add(Object.assign(new THREE.AmbientLight(0xffffff), { intensity: 0.6 }));
   const dir = new THREE.DirectionalLight(0xaa88ff, 1.8);
   dir.position.set(3, 5, 4);
   scene.add(dir);
