@@ -320,6 +320,94 @@
       .p-item{grid-column:span 1!important;grid-row:span 1!important;}
       footer{padding:1.5rem;flex-direction:column;text-align:center;}
     }
+    /* ── RELEASES ── */
+.release-sticky {
+  position: sticky; top: 0; height: 100vh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  overflow: hidden; padding: 2rem;
+}
+.rel-tabs { display:flex; gap:0.5rem; margin-bottom:2rem; }
+.rel-tab {
+  font-family:var(--mono); font-size:0.6rem; letter-spacing:0.15em; text-transform:uppercase;
+  padding:0.4rem 0.9rem; border:1px solid var(--border); background:none; color:var(--muted);
+  cursor:pointer; transition:all 0.2s;
+}
+.rel-tab.active { border-color:var(--pink); color:var(--pink); background:var(--pink-glow); }
+
+.gatefold-wrap { perspective: 1400px; width: min(580px, 90vw); }
+.gf-inner {
+  position:relative; width:100%; aspect-ratio:2/1;
+  transform-style:preserve-3d;
+}
+.gf-inside-left, .gf-inside-right {
+  position:absolute; top:0; width:50%; height:100%;
+}
+.gf-inside-left {
+  left:0; background:#1a0d25; border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center; padding:1.5rem;
+}
+.gf-inside-right {
+  right:0; background:#0e0b1a; border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+}
+
+.gf-cover-left {
+  position:absolute; top:0; left:0; width:50%; height:100%;
+  transform-origin:right center; transform-style:preserve-3d;
+  transition: none;
+}
+.gf-cover-right {
+  position:absolute; top:0; right:0; width:50%; height:100%;
+  transform-origin:left center; transform-style:preserve-3d;
+  transition: none;
+}
+.gf-cover-left-face, .gf-cover-right-face {
+  width:100%; height:100%; position:absolute; top:0; left:0;
+  backface-visibility:hidden;
+}
+.gf-cover-left-face {
+  background: linear-gradient(160deg, #1a0d25, #0d0818);
+  border:1px solid var(--border);
+}
+.gf-cover-right-face {
+  background: linear-gradient(135deg, #200d2e, #0d0818);
+  border:1px solid var(--border);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.4rem;
+}
+.gf-cover-title { font-family:var(--display); font-size:clamp(1.6rem,5vw,3rem); color:var(--pink); letter-spacing:0.1em; }
+.gf-cover-sub { font-family:var(--mono); font-size:0.55rem; letter-spacing:0.25em; color:var(--muted); text-transform:uppercase; }
+
+/* back of covers (seen when opened past 90°) */
+.gf-cover-left-back, .gf-cover-right-back {
+  width:100%; height:100%; position:absolute; top:0; left:0;
+  background:#100820; border:1px solid var(--border);
+  backface-visibility:hidden; transform:rotateY(180deg);
+}
+
+/* 2D Vinyl */
+.vinyl-2d {
+  width:min(150px,32vw); height:min(150px,32vw); border-radius:50%;
+  background:
+    radial-gradient(circle, #000 0%, #000 7%, transparent 7%),
+    radial-gradient(circle, var(--pink-dim) 0%, var(--pink-dim) 26%, transparent 26%),
+    repeating-radial-gradient(circle, #0f0f0f 0px, #1c1c1c 1.5px, #0f0f0f 3px);
+  position:relative; box-shadow:0 0 40px rgba(237,36,200,0.3);
+  opacity:0; transition:opacity 0.6s; animation:vinylSpin 4s linear infinite;
+  animation-play-state: paused;
+}
+.vinyl-2d.open { opacity:1; animation-play-state: running; }
+.vinyl-2d::after {
+  content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  width:26%; height:26%; border-radius:50%;
+  background:radial-gradient(circle, var(--pink) 0%, var(--pink-dim) 100%);
+}
+@keyframes vinylSpin { to { transform:rotate(360deg); } }
+
+.gf-tracklist { text-align:left; }
+.gf-tracklist h4 { font-family:var(--mono); font-size:0.58rem; letter-spacing:0.22em; color:var(--pink); text-transform:uppercase; margin-bottom:1rem; }
+.gf-release-title { font-family:var(--display); font-size:1.5rem; color:var(--text); letter-spacing:0.05em; margin-bottom:0.5rem; }
+.gf-track { font-family:var(--mono); font-size:0.58rem; letter-spacing:0.08em; color:var(--muted); padding:0.3rem 0; border-bottom:1px solid rgba(237,36,200,0.08); }
+.gf-date { font-family:var(--mono); font-size:0.58rem; letter-spacing:0.12em; color:var(--pink); margin-top:1rem; }
   </style>
 </head>
 <body>
@@ -440,6 +528,43 @@
 </section>
 
 <!-- HISTORY / WETTBEWERBE -->
+<!-- RELEASES -->
+<section id="releases" style="height:280vh; position:relative;">
+  <div class="release-sticky">
+    <div class="s-tag" style="text-align:center;margin-bottom:0.8rem;">New Release</div>
+    <h2 class="s-title" style="text-align:center;margin-bottom:2rem;">BALD <span class="o">ERHÄLTLICH</span></h2>
+
+    <div class="rel-tabs">
+      <button class="rel-tab active" data-rel="0">Bigband</button>
+      <button class="rel-tab" data-rel="1">Combo Single</button>
+    </div>
+
+    <div class="gatefold-wrap">
+      <div class="gf-inner">
+        <!-- Inside: track list (left) + record (right) -->
+        <div class="gf-inside-left">
+          <div class="gf-tracklist" id="gfTracklist"></div>
+        </div>
+        <div class="gf-inside-right">
+          <div class="vinyl-2d" id="vinyl2d"></div>
+        </div>
+        <!-- Cover panels on top -->
+        <div class="gf-cover-left" id="gfCoverLeft">
+          <div class="gf-cover-left-face"></div>
+          <div class="gf-cover-left-back"></div>
+        </div>
+        <div class="gf-cover-right" id="gfCoverRight">
+          <div class="gf-cover-right-face">
+            <span class="gf-cover-title">YOULITY</span>
+            <span class="gf-cover-sub">Bigband &amp; Combo</span>
+          </div>
+          <div class="gf-cover-right-back"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+  
 <section id="history">
   <div class="inner">
     <div class="s-tag rv">Rückblick</div>
@@ -687,6 +812,62 @@ document.querySelectorAll('.rep-cat').forEach(cat => {
     document.getElementById('rep-' + cat.dataset.rep).classList.add('a');
   });
 });
+  // ── RELEASES / GATEFOLD ───────────────────────────────────────────────────
+const releases = [
+  {
+    label: 'Bigband Album',
+    title: 'Titel Placeholder',
+    tracks: ['Track Placeholder', 'Track Placeholder', 'Track Placeholder', 'Track Placeholder', 'Track Placeholder'],
+    date: 'Erscheint: Bald ✦'
+  },
+  {
+    label: 'Combo Single',
+    title: 'Titel Placeholder',
+    tracks: ['A-Seite: Track Placeholder', 'B-Seite: Track Placeholder'],
+    date: 'Erscheint: Bald ✦'
+  }
+];
+
+let currentRel = 0;
+function renderRelease() {
+  const r = releases[currentRel];
+  document.getElementById('gfTracklist').innerHTML =
+    `<h4>${r.label}</h4>
+     <div class="gf-release-title">${r.title}</div>
+     ${r.tracks.map((t,i) => `<div class="gf-track">${String(i+1).padStart(2,'0')}  ${t}</div>`).join('')}
+     <div class="gf-date">${r.date}</div>`;
+}
+renderRelease();
+
+document.querySelectorAll('.rel-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.rel-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentRel = parseInt(tab.dataset.rel);
+    renderRelease();
+  });
+});
+
+const releasesSec = document.getElementById('releases');
+const gfLeft  = document.getElementById('gfCoverLeft');
+const gfRight = document.getElementById('gfCoverRight');
+const vinyl2d = document.getElementById('vinyl2d');
+
+window.addEventListener('scroll', () => {
+  if (!releasesSec) return;
+  const scrolled = -releasesSec.getBoundingClientRect().top;
+  const maxScroll = releasesSec.offsetHeight - window.innerHeight;
+  const p = Math.max(0, Math.min(1, scrolled / maxScroll));
+
+  // 0–0.6: cover opens
+  const open = Math.min(1, p / 0.6);
+  const angle = open * 172;
+  gfLeft.style.transform  = `rotateY(${-angle}deg)`;
+  gfRight.style.transform = `rotateY(${angle}deg)`;
+
+  // 0.35+: record spins in
+  vinyl2d.classList.toggle('open', p > 0.35);
+}, { passive: true });
 </script>
 </body>
 </html>
