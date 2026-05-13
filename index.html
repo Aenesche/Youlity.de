@@ -334,87 +334,100 @@
 }
 .rel-tab.active { border-color:var(--pink); color:var(--pink); background:var(--pink-glow); }
 
-.gatefold-wrap { perspective: 1400px; width: min(580px, 90vw); }
+.gatefold-wrap {
+  perspective: 1400px;
+  width: min(600px, 92vw);
+}
 .gf-inner {
-  position:relative; width:100%; aspect-ratio:2/1;
-  transform-style:preserve-3d;
+  position: relative; width: 100%; aspect-ratio: 2 / 1;
+  transform-style: preserve-3d;
 }
 .gf-inside-left, .gf-inside-right {
-  position:absolute; top:0; width:50%; height:100%;
+  position: absolute; top: 0; height: 100%;
+  border: 1px solid var(--border);
 }
 .gf-inside-left {
-  left:0; background:#1a0d25; border:1px solid var(--border);
-  display:flex; align-items:center; justify-content:center; padding:1.5rem;
+  left: 0; width: 50%; background: #1a0d25;
+  display: flex; align-items: center; justify-content: center; padding: 1.2rem;
 }
 .gf-inside-right {
-  right:0; background:#0e0b1a; border:1px solid var(--border);
-  display:flex; align-items:center; justify-content:center;
+  right: 0; width: 50%; background: #0e0b1a;
+  display: flex; align-items: center; justify-content: center;
 }
-
-.gf-cover-left {
-  position:absolute; top:0; left:0; width:50%; height:100%;
-  transform-origin:right center; transform-style:preserve-3d;
-  transition: none;
+.gf-cover-left, .gf-cover-right {
+  position: absolute; top: 0; height: 100%; width: 50%;
+  transform-style: preserve-3d;
 }
-.gf-cover-right {
-  position:absolute; top:0; right:0; width:50%; height:100%;
-  transform-origin:left center; transform-style:preserve-3d;
-  transition: none;
+.gf-cover-left  { left: 0;  transform-origin: right center; }
+.gf-cover-right { right: 0; transform-origin: left center; }
+.gf-face {
+  position: absolute; inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
-.gf-cover-left-face, .gf-cover-right-face {
-  width:100%; height:100%; position:absolute; top:0; left:0;
-  backface-visibility:hidden;
+.gf-face-back {
+  background: #100820; border: 1px solid var(--border);
+  transform: rotateY(180deg);
 }
-.gf-cover-left-face {
-  background: url('cover-bigband.png') center/cover no-repeat;
-  border: 1px solid var(--border);
+.vinyl-2d {
+  border-radius: 50%; opacity: 0;
+  transition: opacity 0.6s;
+  animation: vinylSpin 4s linear infinite;
+  animation-play-state: paused;
+  position: relative; flex-shrink: 0;
 }
-.gf-cover-right-face {
-  background: url('cover-bigband.png') center/cover no-repeat;
-  background-position: right center;
-  border: 1px solid var(--border);
+.vinyl-2d.open { opacity: 1; animation-play-state: running; }
+.vinyl-2d::after {
+  content: ''; position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background-size: 70%; background-position: center; background-repeat: no-repeat;
 }
-.gf-cover-title { font-family:var(--display); font-size:clamp(1.6rem,5vw,3rem); color:var(--pink); letter-spacing:0.1em; }
-.gf-cover-sub { font-family:var(--mono); font-size:0.55rem; letter-spacing:0.25em; color:var(--muted); text-transform:uppercase; }
-
-/* back of covers (seen when opened past 90°) */
-.gf-cover-left-back, .gf-cover-right-back {
-  width:100%; height:100%; position:absolute; top:0; left:0;
-  background:#100820; border:1px solid var(--border);
-  backface-visibility:hidden; transform:rotateY(180deg);
-}
-
-/* 2D Vinyl */
 .vinyl-2d.bigband {
-  width: min(160px, 34vw); height: min(160px, 34vw);
+  width: min(150px, 30vw); height: min(150px, 30vw);
   background:
     radial-gradient(circle, #000 0%, #000 7%, transparent 7%),
-    radial-gradient(circle, var(--pink-dim) 0%, var(--pink-dim) 26%, transparent 26%),
+    radial-gradient(circle, #5c1049 0%, #5c1049 26%, transparent 26%),
     repeating-radial-gradient(circle, #0f0f0f 0px, #1c1c1c 1.5px, #0f0f0f 3px);
-  box-shadow: 0 0 50px rgba(237,36,200,0.4);
+  box-shadow: 0 0 50px rgba(237,36,200,0.45);
 }
 .vinyl-2d.bigband::after {
-  background: url('logo.png') center/70% no-repeat, radial-gradient(circle, var(--pink) 0%, var(--pink-dim) 100%);
+  width: 28%; height: 28%;
+  background-image: url('logo.png');
+  background-color: var(--pink);
 }
-
 .vinyl-2d.combo {
-  width: min(120px, 26vw); height: min(120px, 26vw);
+  width: min(112px, 22vw); height: min(112px, 22vw);
   background:
     radial-gradient(circle, #000 0%, #000 8%, transparent 8%),
     radial-gradient(circle, #3d1060 0%, #3d1060 30%, transparent 30%),
     repeating-radial-gradient(circle, #12082a 0px, #1e0f3a 1.5px, #12082a 3px);
-  box-shadow: 0 0 30px rgba(120,40,200,0.5);
+  box-shadow: 0 0 35px rgba(140,50,220,0.5);
 }
 .vinyl-2d.combo::after {
-  background: url('logo.png') center/70% no-repeat, radial-gradient(circle, #b060ff 0%, #5a1090 100%);
+  width: 28%; height: 28%;
+  background-image: url('logo.png');
+  background-color: #9040e0;
 }
-@keyframes vinylSpin { to { transform:rotate(360deg); } }
-
-.gf-tracklist { text-align:left; }
-.gf-tracklist h4 { font-family:var(--mono); font-size:0.58rem; letter-spacing:0.22em; color:var(--pink); text-transform:uppercase; margin-bottom:1rem; }
-.gf-release-title { font-family:var(--display); font-size:1.5rem; color:var(--text); letter-spacing:0.05em; margin-bottom:0.5rem; }
-.gf-track { font-family:var(--mono); font-size:0.58rem; letter-spacing:0.08em; color:var(--muted); padding:0.3rem 0; border-bottom:1px solid rgba(237,36,200,0.08); }
-.gf-date { font-family:var(--mono); font-size:0.58rem; letter-spacing:0.12em; color:var(--pink); margin-top:1rem; }
+@keyframes vinylSpin { to { transform: rotate(360deg); } }
+.gf-tracklist { text-align: left; width: 100%; }
+.gf-tracklist h4 {
+  font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.22em;
+  color: var(--pink); text-transform: uppercase; margin-bottom: 0.8rem;
+}
+.gf-release-title {
+  font-family: var(--display); font-size: 1.3rem; color: var(--text);
+  letter-spacing: 0.05em; margin-bottom: 0.5rem;
+}
+.gf-track {
+  font-family: var(--mono); font-size: 0.52rem; letter-spacing: 0.06em;
+  color: var(--muted); padding: 0.28rem 0;
+  border-bottom: 1px solid rgba(237,36,200,0.08);
+}
+.gf-date {
+  font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.12em;
+  color: var(--pink); margin-top: 0.8rem;
+}
   </style>
 </head>
 <body>
@@ -540,32 +553,28 @@
   <div class="release-sticky">
     <div class="s-tag" style="text-align:center;margin-bottom:0.8rem;">New Release</div>
     <h2 class="s-title" style="text-align:center;margin-bottom:2rem;">BALD <span class="o">ERHÄLTLICH</span></h2>
-
     <div class="rel-tabs">
       <button class="rel-tab active" data-rel="0">Bigband</button>
       <button class="rel-tab" data-rel="1">Combo Single</button>
     </div>
-
     <div class="gatefold-wrap">
       <div class="gf-inner">
-        <!-- Inside: track list (left) + record (right) -->
+        <!-- Innenseite (immer sichtbar im Hintergrund) -->
         <div class="gf-inside-left">
           <div class="gf-tracklist" id="gfTracklist"></div>
         </div>
         <div class="gf-inside-right">
           <div class="vinyl-2d" id="vinyl2d"></div>
         </div>
-        <!-- Cover panels on top -->
+        <!-- Linke Klappe: dreht sich nach links auf -->
         <div class="gf-cover-left" id="gfCoverLeft">
-          <div class="gf-cover-left-face"></div>
-          <div class="gf-cover-left-back"></div>
+          <div class="gf-face gf-face-front" id="coverLeftFront"></div>
+          <div class="gf-face gf-face-back"></div>
         </div>
+        <!-- Rechte Klappe: dreht sich nach rechts auf -->
         <div class="gf-cover-right" id="gfCoverRight">
-          <div class="gf-cover-right-face">
-            <span class="gf-cover-title">YOULITY</span>
-            <span class="gf-cover-sub">Bigband &amp; Combo</span>
-          </div>
-          <div class="gf-cover-right-back"></div>
+          <div class="gf-face gf-face-front" id="coverRightFront"></div>
+          <div class="gf-face gf-face-back"></div>
         </div>
       </div>
     </div>
@@ -854,25 +863,56 @@ const releases = [
 let currentRel = 0;
 
 function renderRelease() {
+  // ── RELEASES / GATEFOLD ────────────────────────────────────────────────
+const releases = [
+  {
+    label: 'Bigband Album', title: 'Youlity Bigband',
+    tracks: [
+      'North Africa – Chick Corea, Arr. Mike Tomaro',
+      'Chips n\'Salsa – Gerald Albright, Arr. Harry Kim',
+      'Not to be Forgotten – Pat Metheny, Arr. Bob Curnow',
+      'You & Me – Disclosure, Arr. Mark Rock Borissov',
+      'Feels so Good – Chuck Mangione, Arr. Victor López',
+      'Shofukan – Michael League, Arr. Mackinley Hill'
+    ],
+    date: 'Erscheint bald ✦',
+    vinylClass: 'bigband',
+    img: 'cover-bigband.png'
+  },
+  {
+    label: 'Combo Single', title: 'Youlity Combo',
+    tracks: [
+      'Hold the Line – Toto, Arr. Youlity Combo',
+      'I will Survive – Gloria Gaynor, Arr. Youlity Combo',
+      'Bonustrack: Smalltown Boy – Bronski Beat'
+    ],
+    date: 'Erscheint bald ✦',
+    vinylClass: 'combo',
+    img: 'cover-combo.png'
+  }
+];
+
+let currentRel = 0;
+const gfLeft        = document.getElementById('gfCoverLeft');
+const gfRight       = document.getElementById('gfCoverRight');
+const coverLeftFront  = document.getElementById('coverLeftFront');
+const coverRightFront = document.getElementById('coverRightFront');
+const vinyl2d       = document.getElementById('vinyl2d');
+
+function renderRelease() {
   const r = releases[currentRel];
 
-  // tracklist
   document.getElementById('gfTracklist').innerHTML =
     `<h4>${r.label}</h4>
      <div class="gf-release-title">${r.title}</div>
-     ${r.tracks.map((t,i) => `<div class="gf-track">${String(i+1).padStart(2,'0')}  ${t}</div>`).join('')}
+     ${r.tracks.map((t,i)=>`<div class="gf-track">${String(i+1).padStart(2,'0')}  ${t}</div>`).join('')}
      <div class="gf-date">${r.date}</div>`;
 
-  // vinyl style
-  const v = document.getElementById('vinyl2d');
-  v.className = 'vinyl-2d ' + (v.classList.contains('open') ? 'open ' : '') + r.vinylClass;
+  // Bild: links = Rückseite (linke Bildhälfte), rechts = Vorderseite (rechte Bildhälfte)
+  coverLeftFront.style.cssText  = `background:url('${r.img}') left center/200% auto no-repeat; border:1px solid rgba(237,36,200,0.2);`;
+  coverRightFront.style.cssText = `background:url('${r.img}') right center/200% auto no-repeat; border:1px solid rgba(237,36,200,0.2);`;
 
-  // cover images: left = back (right half of image), right = front (left half of image)
-  document.querySelector('.gf-cover-left-face').style.background =
-    `url('${r.coverImg}') left center / 200% auto no-repeat`;
-  document.querySelector('.gf-cover-right-face').style.background =
-    `url('${r.coverImg}') right center / 200% auto no-repeat`;
-  document.querySelector('.gf-cover-right-face').style.flexDirection = 'column';
+  vinyl2d.className = 'vinyl-2d ' + r.vinylClass + (vinyl2d.classList.contains('open') ? ' open' : '');
 }
 
 renderRelease();
@@ -882,34 +922,26 @@ document.querySelectorAll('.rel-tab').forEach(tab => {
     document.querySelectorAll('.rel-tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     currentRel = parseInt(tab.dataset.rel);
-    // reset cover before re-render
+    // Cover schließen, dann neu rendern
     gfLeft.style.transform  = 'rotateY(0deg)';
     gfRight.style.transform = 'rotateY(0deg)';
-    document.getElementById('vinyl2d').classList.remove('open');
+    vinyl2d.classList.remove('open');
     renderRelease();
-    // scroll back to top of section
     document.getElementById('releases').scrollIntoView({ behavior: 'smooth' });
   });
 });
 
 const releasesSec = document.getElementById('releases');
-const gfLeft  = document.getElementById('gfCoverLeft');
-const gfRight = document.getElementById('gfCoverRight');
-const vinyl2d = document.getElementById('vinyl2d');
-
 window.addEventListener('scroll', () => {
-  if (!releasesSec) return;
   const scrolled = -releasesSec.getBoundingClientRect().top;
   const maxScroll = releasesSec.offsetHeight - window.innerHeight;
   const p = Math.max(0, Math.min(1, scrolled / maxScroll));
 
-  // covers öffnen sich nach VORNE/AUSSEN (nicht nach hinten)
-  const open = Math.min(1, p / 0.6);
-  const angle = open * 168;
-  gfLeft.style.transform  = `rotateY(${angle}deg)`;   // ← nach links öffnen
-  gfRight.style.transform = `rotateY(${-angle}deg)`;  // → nach rechts öffnen
+  const angle = Math.min(1, p / 0.65) * 170;
+  gfLeft.style.transform  = `rotateY(${-angle}deg)`;  // nach links aufklappen
+  gfRight.style.transform = `rotateY(${angle}deg)`;   // nach rechts aufklappen
 
-  vinyl2d.classList.toggle('open', p > 0.35);
+  vinyl2d.classList.toggle('open', p > 0.3);
 }, { passive: true });
 </script>
 </body>
