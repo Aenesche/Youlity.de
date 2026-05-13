@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Youlity – Bigband & Combo Berlin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=Space+Mono&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <style>
+    :root {
+      --bg:       #07050f;
+      --surface:  #0e0b1a;
+      --pink:     #ed24c8;
+      --pink-dim: #5c1049;
+      --pink-glow:rgba(237,36,200,0.12);
+      --text:     #f0eaf8;
+      --muted:    #6b607a;
+      --border:   rgba(237,36,200,0.18);
+      --display:  'Bebas Neue', sans-serif;
+      --body:     'DM Sans', sans-serif;
+      --mono:     'Space Mono', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--body); overflow-x: hidden; }
+
+    /* ── INTRO ── */
+    #intro {
+      position: fixed; inset: 0; background: #000; z-index: 9999;
+      display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 1rem;
+    }
+    .intro-name {
+      font-family: var(--display); font-size: clamp(4.5rem, 18vw, 14rem);
+      letter-spacing: 0.04em; line-height: 1; overflow: hidden;
+    }
+    .intro-name span {
+      display: block;
+      transform: translateY(110%);
+      animation: introUp 0.95s cubic-bezier(0.16,1,0.3,1) 0.25s forwards;
+    }
+    .intro-sub {
+      font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.35em;
+      color: var(--pink); text-transform: uppercase;
+      opacity: 0; animation: introFade 0.6s ease 1s forwards;
+    }
+    #intro.hide { animation: introOut 0.9s cubic-bezier(0.7,0,1,0.3) 2.4s forwards; }
+    @keyframes introUp   { to { transform: translateY(0); } }
+    @keyframes introFade { to { opacity: 1; } }
+    @keyframes introOut  { to { clip-path: inset(0 0 100% 0); } }
+
+    /* ── VINYL BG ── */
+    #vinyl-canvas {
+      position: fixed; top:0; left:0; width:100%; height:100%;
+      pointer-events:none; z-index:0; opacity:0.13;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top:0; left:0; right:0; z-index:100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.6rem 3rem; transition: background 0.3s, padding 0.3s;
+    }
+    nav.scrolled {
+      background: rgba(7,5,15,0.92); backdrop-filter: blur(14px);
+      padding: 0.9rem 3rem; border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: var(--display); font-size: 1.5rem; letter-spacing: 0.12em;
+      color: var(--text); text-decoration: none;
+    }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--muted); text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--pink); }
+    .nav-toggle {
+      display: none; flex-direction: column; gap: 5px;
+      background: none; border: none; cursor: pointer; padding: 4px;
+    }
+    .nav-toggle span { display: block; width: 22px; height: 1px; background: var(--text); }
+
+    /* ── SECTION BASE ── */
+    section { position: relative; z-index: 1; }
+    .inner { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+
+    /* ── SECTION HEADERS ── */
+    .s-tag {
+      font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.3em;
+      color: var(--pink); text-transform: uppercase; margin-bottom: 1rem;
+    }
+    .s-title {
+      font-family: var(--display); font-size: clamp(3rem, 8vw, 7rem);
+      line-height: 0.88; letter-spacing: 0.02em; color: var(--text); margin-bottom: 3.5rem;
+    }
+    .s-title .o { -webkit-text-stroke: 1px var(--pink); color: transparent; }
+
+    /* ── REVEAL ── */
+    .rv {
+      opacity: 0; transform: translateY(36px);
+      transition: opacity 0.85s ease, transform 0.85s cubic-bezier(0.16,1,0.3,1);
+    }
+    .rv.on { opacity: 1; transform: translateY(0); }
+    .d1{transition-delay:.1s} .d2{transition-delay:.2s} .d3{transition-delay:.3s}
+    .d4{transition-delay:.4s} .d5{transition-delay:.5s} .d6{transition-delay:.6s}
+
+    /* ── HERO ── */
+    #hero {
+      height: 100vh; display: flex; align-items: center; justify-content: center;
+      text-align: center; padding: 0 2rem;
+    }
+    .hero-tag {
+      font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.35em;
+      color: var(--pink); text-transform: uppercase; margin-bottom: 1.5rem;
+      opacity:0; animation: fadeUp 0.8s ease 2.8s forwards;
+    }
+    .hero-title {
+      font-family: var(--display); font-size: clamp(5.5rem, 22vw, 17rem);
+      line-height: 0.86; letter-spacing: 0.02em; color: var(--text);
+      opacity:0; animation: fadeUp 0.9s cubic-bezier(0.16,1,0.3,1) 3s forwards;
+    }
+    .hero-sub {
+      margin-top: 1.8rem; font-size: 1.05rem; font-weight: 300; letter-spacing: 0.04em;
+      color: var(--muted); opacity:0; animation: fadeUp 0.8s ease 3.2s forwards;
+    }
+    .hero-scroll {
+      position: absolute; bottom: 3rem; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 0.6rem;
+      opacity:0; animation: fadeUp 0.8s ease 3.7s forwards;
+    }
+    .hero-scroll span { font-family: var(--mono); font-size: 0.5rem; letter-spacing: 0.25em; color: var(--muted); text-transform: uppercase; }
+    .scroll-line { width: 1px; height: 52px; background: linear-gradient(to bottom, var(--pink), transparent); animation: scrollP 2.2s ease-in-out infinite; }
+    @keyframes scrollP { 0%,100%{opacity:.3;transform:scaleY(1)} 50%{opacity:1;transform:scaleY(1.15)} }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ── ÜBER UNS ── */
+    #about { padding: 10rem 0; }
+    .about-grid { display: grid; grid-template-columns: 1fr 1.6fr; gap: 6rem; align-items: start; }
+    .about-text { font-size: 1.15rem; line-height: 1.85; color: var(--muted); font-weight: 300; }
+    .about-text strong { color: var(--text); font-weight: 400; }
+    .about-text + .about-text { margin-top: 1.5rem; }
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 3rem; }
+    .stat { border: 1px solid var(--border); padding: 1.4rem; background: var(--surface); }
+    .stat .n { font-family: var(--display); font-size: 3.2rem; color: var(--pink); line-height: 1; }
+    .stat .l { font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase; margin-top: 0.4rem; }
+    .pill-row { display: flex; gap: 0.8rem; margin-top: 2rem; flex-wrap: wrap; }
+    .pill {
+      font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase;
+      padding: 0.55rem 1.1rem; border: 1px solid var(--border); color: var(--muted);
+      text-decoration: none; transition: all 0.2s;
+    }
+    .pill:hover { border-color: var(--pink); color: var(--pink); background: var(--pink-glow); }
+
+    /* ── MITGLIEDER ── */
+    #members { padding: 8rem 0; background: linear-gradient(to bottom, transparent, var(--surface), transparent); }
+    .members-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 1px; background: var(--border); border: 1px solid var(--border);
+    }
+    .m-card {
+      background: var(--bg); padding: 1.8rem 1.5rem;
+      position: relative; overflow: hidden; transition: background 0.3s;
+    }
+    .m-card::after {
+      content:''; position:absolute; bottom:0; left:0; width:100%; height:2px;
+      background:var(--pink); transform:scaleX(0); transition:transform 0.3s; transform-origin:left;
+    }
+    .m-card:hover { background: var(--surface); }
+    .m-card:hover::after { transform: scaleX(1); }
+    .m-photo {
+      width:100%; aspect-ratio:1; background:var(--surface); border:1px solid var(--border);
+      margin-bottom:1rem; display:flex; align-items:center; justify-content:center;
+      font-family:var(--display); font-size:2.5rem; color:var(--pink-dim); overflow:hidden;
+    }
+    .m-photo img { width:100%; height:100%; object-fit:cover; }
+    .m-inst { font-family:var(--mono); font-size:0.55rem; letter-spacing:0.2em; color:var(--pink); text-transform:uppercase; margin-bottom:0.35rem; }
+    .m-name { font-family:var(--display); font-size:1.35rem; letter-spacing:0.04em; color:var(--text); }
+
+    /* ── KONZERTE ── */
+    #concerts { padding: 8rem 0; }
+    .concert-ctrl { display:flex; gap:0.75rem; margin-bottom:1.75rem; flex-wrap:wrap; }
+    .s-btn {
+      font-family:var(--mono); font-size:0.58rem; letter-spacing:0.18em; text-transform:uppercase;
+      padding:0.45rem 0.9rem; border:1px solid var(--border); background:none; color:var(--muted);
+      cursor:pointer; transition:all 0.2s;
+    }
+    .s-btn:hover, .s-btn.a { border-color:var(--pink); color:var(--pink); background:var(--pink-glow); }
+    .c-list { display:flex; flex-direction:column; gap:1px; background:var(--border); border:1px solid var(--border); }
+    .c-item {
+      display:grid; grid-template-columns:90px 1fr auto; gap:2rem; align-items:center;
+      padding:1.4rem 2rem; background:var(--bg); transition:background 0.2s; cursor:default;
+    }
+    .c-item:hover { background:var(--surface); }
+    .c-date { font-family:var(--display); font-size:2.1rem; line-height:1; color:var(--pink); }
+    .c-date small { display:block; font-family:var(--mono); font-size:0.5rem; letter-spacing:0.2em; color:var(--muted); margin-top:0.15rem; }
+    .c-venue { font-size:0.98rem; font-weight:500; color:var(--text); }
+    .c-city { font-family:var(--mono); font-size:0.6rem; letter-spacing:0.1em; color:var(--muted); margin-top:0.2rem; }
+    .c-tag {
+      font-family:var(--mono); font-size:0.52rem; letter-spacing:0.15em; text-transform:uppercase;
+      padding:0.35rem 0.75rem; border:1px solid var(--border); color:var(--muted);
+    }
+    .c-tag.up { border-color:var(--pink); color:var(--pink); }
+    .c-empty {
+      padding:2.5rem; text-align:center; font-family:var(--mono);
+      font-size:0.65rem; letter-spacing:0.2em; color:var(--muted); text-transform:uppercase;
+      background:var(--bg);
+    }
+
+    /* ── HISTORY ── */
+    #history { padding: 8rem 0; background: linear-gradient(to bottom, transparent, var(--surface), transparent); }
+    .h-grid {
+      display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
+      background:var(--border); border:1px solid var(--border);
+    }
+    .h-item { background:var(--bg); padding:2rem; transition:background 0.2s; }
+    .h-item:hover { background:var(--surface); }
+    .h-year { font-family:var(--display); font-size:2.8rem; color:var(--pink-dim); line-height:1; margin-bottom:0.4rem; }
+    .h-event { font-size:0.95rem; color:var(--text); margin-bottom:0.2rem; }
+    .h-place { font-family:var(--mono); font-size:0.58rem; letter-spacing:0.14em; color:var(--muted); text-transform:uppercase; }
+    .h-award { margin-top:0.7rem; font-family:var(--mono); font-size:0.58rem; letter-spacing:0.1em; color:var(--pink); }
+    .h-award::before { content:'★ '; }
+
+    /* ── REPERTOIRE ── */
+    #repertoire { padding: 8rem 0; }
+    .rep-grid { display:grid; grid-template-columns:1fr 2fr; gap:5rem; align-items:start; }
+    .rep-cat {
+      font-family:var(--display); font-size:2rem; color:var(--muted); cursor:pointer;
+      border-left:2px solid transparent; padding-left:1rem; line-height:1.1;
+      transition:all 0.25s; margin-bottom:0.4rem;
+    }
+    .rep-cat.a, .rep-cat:hover { color:var(--text); border-left-color:var(--pink); }
+    .rep-text { font-size:1.05rem; line-height:1.85; color:var(--muted); font-weight:300; }
+    .rep-text strong { color:var(--text); font-weight:400; }
+    .rep-pane { display:none; } .rep-pane.a { display:block; }
+
+    /* ── FOTOS ── */
+    #photos { padding: 8rem 0; background: linear-gradient(to bottom, transparent, var(--surface), transparent); }
+    .p-grid {
+      display:grid; grid-template-columns:repeat(12,1fr); grid-auto-rows:110px; gap:3px;
+    }
+    .p-item {
+      background:var(--surface); border:1px solid var(--border);
+      overflow:hidden; cursor:pointer; position:relative; transition:border-color 0.2s;
+    }
+    .p-item:hover { border-color:var(--pink); }
+    .p-item:nth-child(1) { grid-column:span 5; grid-row:span 3; }
+    .p-item:nth-child(2) { grid-column:span 7; grid-row:span 2; }
+    .p-item:nth-child(3) { grid-column:span 3; grid-row:span 2; }
+    .p-item:nth-child(4) { grid-column:span 4; grid-row:span 2; }
+    .p-item:nth-child(5) { grid-column:span 5; grid-row:span 1; }
+    .p-item:nth-child(6) { grid-column:span 4; grid-row:span 3; }
+    .p-item:nth-child(7) { grid-column:span 8; grid-row:span 2; }
+    .p-item img { width:100%; height:100%; object-fit:cover; transition:transform 0.5s; }
+    .p-item:hover img { transform:scale(1.04); }
+    .p-ph {
+      width:100%; height:100%; display:flex; align-items:center; justify-content:center;
+      font-family:var(--mono); font-size:0.5rem; letter-spacing:0.2em; color:var(--muted); text-transform:uppercase;
+    }
+
+    /* ── VIDEOS ── */
+    #videos { padding: 8rem 0; }
+    .v-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(310px,1fr)); gap:1rem; }
+    .v-wrap { }
+    .v-embed { position:relative; padding-bottom:56.25%; border:1px solid var(--border); overflow:hidden; background:var(--surface); }
+    .v-embed iframe { position:absolute; top:0; left:0; width:100%; height:100%; border:none; }
+    .v-ph { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:1rem; }
+    .v-play { width:46px; height:46px; border:2px solid var(--pink); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--pink); font-size:0.9rem; }
+    .v-cap { font-family:var(--mono); font-size:0.58rem; letter-spacing:0.14em; color:var(--muted); text-transform:uppercase; padding:0.65rem 1rem; border-top:1px solid var(--border); }
+    .yt-link { text-align:center; margin-top:2.5rem; }
+
+    /* ── MERCH ── */
+    #merch { padding: 8rem 0; background: linear-gradient(to bottom, transparent, var(--surface), transparent); }
+    .mc-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(250px,1fr)); gap:1px; background:var(--border); border:1px solid var(--border); }
+    .mc { background:var(--bg); overflow:hidden; }
+    .mc-img { aspect-ratio:1; background:var(--surface); display:flex; align-items:center; justify-content:center; font-size:3rem; position:relative; }
+    .mc-over { position:absolute; inset:0; background:rgba(7,5,15,0.72); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; }
+    .mc-over span { font-family:var(--mono); font-size:0.58rem; letter-spacing:0.28em; color:var(--pink); text-transform:uppercase; border:1px solid var(--pink); padding:0.45rem 0.9rem; }
+    .mc-info { padding:1.2rem 1.5rem; }
+    .mc-name { font-family:var(--display); font-size:1.35rem; letter-spacing:0.04em; color:var(--text); }
+    .mc-price { font-family:var(--mono); font-size:0.62rem; color:var(--muted); margin-top:0.2rem; }
+
+    /* ── KONTAKT ── */
+    #contact { padding: 8rem 0; text-align:center; }
+    .c-mail {
+      font-family:var(--display); font-size:clamp(1.6rem,5vw,4.2rem); color:var(--text);
+      text-decoration:none; border-bottom:1px solid var(--pink); padding-bottom:0.2rem;
+      display:inline-block; transition:color 0.2s; letter-spacing:0.02em;
+    }
+    .c-mail:hover { color:var(--pink); }
+    .c-social { display:flex; gap:1rem; justify-content:center; margin-top:3rem; flex-wrap:wrap; }
+    .sn-banner { margin:4rem auto 0; max-width:540px; padding:1.8rem; border:1px solid var(--border); background:var(--surface); }
+    .sn-banner p { font-size:0.92rem; line-height:1.75; color:var(--muted); }
+    .sn-banner strong { color:var(--text); font-weight:400; }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top:1px solid var(--border); padding:2rem 3rem;
+      display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;
+      position:relative; z-index:1;
+    }
+    .f-copy { font-family:var(--mono); font-size:0.58rem; letter-spacing:0.15em; color:var(--muted); }
+    .f-links { display:flex; gap:2rem; }
+    .f-links a { font-family:var(--mono); font-size:0.58rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--muted); text-decoration:none; transition:color 0.2s; }
+    .f-links a:hover { color:var(--pink); }
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:900px) {
+      nav{padding:1.2rem 1.5rem;} nav.scrolled{padding:0.8rem 1.5rem;}
+      .nav-links{display:none;flex-direction:column;position:absolute;top:100%;left:0;right:0;background:rgba(7,5,15,.97);padding:2rem;gap:1.5rem;border-bottom:1px solid var(--border);}
+      .nav-links.open{display:flex;} .nav-toggle{display:flex;}
+      .about-grid{grid-template-columns:1fr;gap:3rem;}
+      .rep-grid{grid-template-columns:1fr;gap:2rem;}
+      .h-grid{grid-template-columns:1fr;}
+      .c-item{grid-template-columns:70px 1fr;} .c-tag{display:none;}
+      .p-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:140px;}
+      .p-item{grid-column:span 1!important;grid-row:span 1!important;}
+      footer{padding:1.5rem;flex-direction:column;text-align:center;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- INTRO -->
+<div id="intro">
+  <div class="intro-name"><span>YOULITY</span></div>
+  <div class="intro-sub">Bigband &amp; Combo · Berlin</div>
+</div>
+
+<!-- VINYL BG -->
+<canvas id="vinyl-canvas"></canvas>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#hero" class="nav-logo">Youlity</a>
+  <button class="nav-toggle" id="navToggle" aria-label="Menü">
+    <span></span><span></span><span></span>
+  </button>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#about">Über uns</a></li>
+    <li><a href="#members">Band</a></li>
+    <li><a href="#concerts">Konzerte</a></li>
+    <li><a href="#photos">Fotos</a></li>
+    <li><a href="#videos">Videos</a></li>
+    <li><a href="#merch">Merch</a></li>
+    <li><a href="#contact">Kontakt</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div style="position:relative;z-index:2;text-align:center;">
+    <div class="hero-tag">Berlin · Bigband & Combo</div>
+    <h1 class="hero-title">YOULITY</h1>
+    <p class="hero-sub">Von Jazz bis Techno — irgendwo dazwischen liegt die Wahrheit.</p>
+  </div>
+  <div class="hero-scroll">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ÜBER UNS -->
+<section id="about">
+  <div class="inner">
+    <div class="about-grid">
+      <div>
+        <div class="s-tag rv">Über uns</div>
+        <h2 class="s-title rv d1">WIR<br>SIND<br><span class="o">YOULITY</span></h2>
+        <div class="stats">
+          <div class="stat rv d2"><div class="n">20+</div><div class="l">Mitglieder</div></div>
+          <div class="stat rv d3"><div class="n">∞</div><div class="l">Genres</div></div>
+          <div class="stat rv d4"><div class="n">BLN</div><div class="l">Heimatstadt</div></div>
+          <div class="stat rv d5"><div class="n">★★</div><div class="l">Ausgezeichnet</div></div>
+        </div>
+      </div>
+      <div class="rv d2">
+        <p class="about-text">
+          <strong>Youlity</strong> ist eine Berliner Bigband, die keine Grenzen kennt —
+          von den swingenden Arrangements des klassischen Jazz bis zu den treibenden
+          Beats zeitgenössischer elektronischer Musik.
+        </p>
+        <p class="about-text">
+          [Placeholder: Hier schreibt die Band ihren eigenen Text —
+          Entstehungsgeschichte, Philosophie, was euch antreibt.]
+        </p>
+        <div class="pill-row" style="margin-top:2rem;">
+          <a href="https://www.instagram.com/youlity.bigband" target="_blank" class="pill">Instagram</a>
+          <a href="https://www.youtube.com/@YoulityBigbandBln" target="_blank" class="pill">YouTube</a>
+          <a href="https://linktr.ee/youlity" target="_blank" class="pill">Linktree</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MITGLIEDER -->
+<section id="members">
+  <div class="inner">
+    <div class="s-tag rv">Die Band</div>
+    <h2 class="s-title rv d1">UNSER <span class="o">ENSEMBLE</span></h2>
+    <div class="members-grid" id="membersGrid">
+      <!-- Platzhalter – später aus Supabase -->
+      <div class="m-card rv d1"><div class="m-photo">♩</div><div class="m-inst">Saxophon</div><div class="m-name">Name Placeholder</div></div>
+      <div class="m-card rv d2"><div class="m-photo">♩</div><div class="m-inst">Trompete</div><div class="m-name">Name Placeholder</div></div>
+      <div class="m-card rv d3"><div class="m-photo">♩</div><div class="m-inst">Posaune</div><div class="m-name">Name Placeholder</div></div>
+      <div class="m-card rv d4"><div class="m-photo">♩</div><div class="m-inst">Piano</div><div class="m-name">Name Placeholder</div></div>
+      <div class="m-card rv d5"><div class="m-photo">♩</div><div class="m-inst">Schlagzeug</div><div class="m-name">Name Placeholder</div></div>
+      <div class="m-card rv d6"><div class="m-photo">♩</div><div class="m-inst">Bass</div><div class="m-name">Name Placeholder</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- KONZERTE -->
+<section id="concerts">
+  <div class="inner">
+    <div class="s-tag rv">Live</div>
+    <h2 class="s-title rv d1">KOMMENDE <span class="o">KONZERTE</span></h2>
+    <div class="concert-ctrl rv d2">
+      <button class="s-btn a" data-sort="date-asc">Datum ↑</button>
+      <button class="s-btn" data-sort="date-desc">Datum ↓</button>
+      <button class="s-btn" data-sort="city">Stadt A–Z</button>
+    </div>
+    <div class="c-list rv d3" id="concertList">
+      <!-- Platzhalter -->
+      <div class="c-item" data-date="2026-06-15" data-city="Berlin">
+        <div class="c-date">15<small>Jun 2026</small></div>
+        <div><div class="c-venue">Konzerthaus Placeholder</div><div class="c-city">Berlin, Deutschland</div></div>
+        <div class="c-tag up">Tickets</div>
+      </div>
+      <div class="c-item" data-date="2026-07-22" data-city="Hamburg">
+        <div class="c-date">22<small>Jul 2026</small></div>
+        <div><div class="c-venue">Festival Placeholder</div><div class="c-city">Hamburg, Deutschland</div></div>
+        <div class="c-tag up">Infos</div>
+      </div>
+      <div class="c-empty" id="noConcerts" style="display:none">Derzeit keine Termine eingetragen</div>
+    </div>
+  </div>
+</section>
+
+<!-- HISTORY / WETTBEWERBE -->
+<section id="history">
+  <div class="inner">
+    <div class="s-tag rv">Rückblick</div>
+    <h2 class="s-title rv d1">AUFTRITTE &amp; <span class="o">PREISE</span></h2>
+    <div class="h-grid">
+      <div class="h-item rv d1">
+        <div class="h-year">20XX</div>
+        <div class="h-event">Event Placeholder</div>
+        <div class="h-place">Ort · Stadt</div>
+        <div class="h-award">Preis / Auszeichnung Placeholder</div>
+      </div>
+      <div class="h-item rv d2">
+        <div class="h-year">20XX</div>
+        <div class="h-event">Event Placeholder</div>
+        <div class="h-place">Ort · Stadt</div>
+      </div>
+      <div class="h-item rv d3">
+        <div class="h-year">20XX</div>
+        <div class="h-event">Wettbewerb Placeholder</div>
+        <div class="h-place">Ort · Stadt</div>
+        <div class="h-award">1. Platz Placeholder</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REPERTOIRE -->
+<section id="repertoire">
+  <div class="inner">
+    <div class="s-tag rv">Was wir spielen</div>
+    <h2 class="s-title rv d1">REPERTO<span class="o">IRE</span></h2>
+    <div class="rep-grid">
+      <div class="rv d1">
+        <div class="rep-cat a" data-rep="jazz">Jazz</div>
+        <div class="rep-cat" data-rep="funk">Funk &amp; Soul</div>
+        <div class="rep-cat" data-rep="electronic">Electronic</div>
+        <div class="rep-cat" data-rep="original">Eigene Stücke</div>
+      </div>
+      <div class="rv d2">
+        <div class="rep-pane a" id="rep-jazz"><p class="rep-text">[Placeholder] Jazz-Repertoire — Stücke, Arrangements, Einflüsse. Wer schreibt das? Die Band. ✏️</p></div>
+        <div class="rep-pane" id="rep-funk"><p class="rep-text">[Placeholder] Funk, Soul, R&amp;B — was sind eure Einflüsse, was spielt ihr?</p></div>
+        <div class="rep-pane" id="rep-electronic"><p class="rep-text">[Placeholder] Von Meute-Einflüssen bis Techno-Arrangements — der elektronische Teil.</p></div>
+        <div class="rep-pane" id="rep-original"><p class="rep-text">[Placeholder] Eigene Stücke und Kompositionen aus der Band.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOTOS -->
+<section id="photos">
+  <div class="inner">
+    <div class="s-tag rv">Galerie</div>
+    <h2 class="s-title rv d1">FOTO<span class="o">GALERIE</span></h2>
+    <div class="p-grid">
+      <div class="p-item rv d1"><div class="p-ph">Foto 1</div></div>
+      <div class="p-item rv d2"><div class="p-ph">Foto 2</div></div>
+      <div class="p-item rv d3"><div class="p-ph">Foto 3</div></div>
+      <div class="p-item rv d4"><div class="p-ph">Foto 4</div></div>
+      <div class="p-item rv d5"><div class="p-ph">Foto 5</div></div>
+      <div class="p-item rv d1"><div class="p-ph">Foto 6</div></div>
+      <div class="p-item rv d2"><div class="p-ph">Foto 7</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- VIDEOS -->
+<section id="videos">
+  <div class="inner">
+    <div class="s-tag rv">YouTube</div>
+    <h2 class="s-title rv d1">VIDEOS</h2>
+    <div class="v-grid">
+      <div class="v-wrap rv d1">
+        <div class="v-embed"><div class="v-ph"><div class="v-play">▶</div></div></div>
+        <div class="v-cap">Video Placeholder 1</div>
+      </div>
+      <div class="v-wrap rv d2">
+        <div class="v-embed"><div class="v-ph"><div class="v-play">▶</div></div></div>
+        <div class="v-cap">Video Placeholder 2</div>
+      </div>
+      <div class="v-wrap rv d3">
+        <div class="v-embed"><div class="v-ph"><div class="v-play">▶</div></div></div>
+        <div class="v-cap">Video Placeholder 3</div>
+      </div>
+    </div>
+    <div class="yt-link rv d4">
+      <a href="https://www.youtube.com/@YoulityBigbandBln" target="_blank" class="pill">Alle Videos auf YouTube →</a>
+    </div>
+  </div>
+</section>
+
+<!-- MERCH -->
+<section id="merch">
+  <div class="inner">
+    <div class="s-tag rv">Shop</div>
+    <h2 class="s-title rv d1">MERCH</h2>
+    <div class="mc-grid">
+      <div class="mc rv d1">
+        <div class="mc-img">👕<div class="mc-over"><span>Coming Soon</span></div></div>
+        <div class="mc-info"><div class="mc-name">T-Shirt</div><div class="mc-price">XX,XX €</div></div>
+      </div>
+      <div class="mc rv d2">
+        <div class="mc-img">🧢<div class="mc-over"><span>Coming Soon</span></div></div>
+        <div class="mc-info"><div class="mc-name">Cap</div><div class="mc-price">XX,XX €</div></div>
+      </div>
+      <div class="mc rv d3">
+        <div class="mc-img">💿<div class="mc-over"><span>Coming Soon</span></div></div>
+        <div class="mc-info"><div class="mc-name">Vinyl / CD</div><div class="mc-price">XX,XX €</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KONTAKT -->
+<section id="contact">
+  <div class="inner">
+    <div class="s-tag rv">Schreib uns</div>
+    <h2 class="s-title rv d1">KON<span class="o">TAKT</span></h2>
+    <a href="mailto:Youlitybigband@gmail.com" class="c-mail rv d2">Youlitybigband@gmail.com</a>
+    <div class="c-social rv d3">
+      <a href="https://www.instagram.com/youlity.bigband" target="_blank" class="pill">Instagram</a>
+      <a href="https://www.youtube.com/@YoulityBigbandBln" target="_blank" class="pill">YouTube</a>
+    </div>
+    <div class="sn-banner rv d4">
+      <p><strong>Danke ❤️</strong><br>
+      Unsere Startnext-Kampagne ist abgeschlossen — ein riesengroßes Dankeschön
+      an alle, die uns auf diesem Weg unterstützt haben!</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="f-copy">© 2026 Youlity · Berlin</div>
+  <div class="f-links">
+    <a href="#">Impressum</a>
+    <a href="#">Datenschutz</a>
+    <a href="mailto:Youlitybigband@gmail.com">Kontakt</a>
+  </div>
+</footer>
+
+<script>
+// ── SUPABASE (bereit für später) ──────────────────────────────────────────
+const SUPABASE_URL  = 'https://hmopcvtzhcevouwmdwxa.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhtb3BjdnR6aGNldm91d21kd3hhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzI3MTMsImV4cCI6MjA5NDI0ODcxM30.tyZHv56vvqGfcSBaTUhkOwzZjDsBpS2x7BzLJKS0Wzc';
+// Tabellen die wir später anlegen: concerts, members, photos, videos, merch, history
+
+// ── INTRO ────────────────────────────────────────────────────────────────
+const intro = document.getElementById('intro');
+intro.classList.add('hide');
+intro.addEventListener('animationend', e => {
+  if (e.animationName === 'introOut') intro.style.display = 'none';
+});
+
+// ── VINYL BACKGROUND ─────────────────────────────────────────────────────
+(function() {
+  const canvas = document.getElementById('vinyl-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.z = 5;
+
+  const recordGeo = new THREE.CylinderGeometry(1.5, 1.5, 0.07, 64);
+  const record = new THREE.Mesh(recordGeo, new THREE.MeshStandardMaterial({ color: 0x0d0818, roughness: 0.3, metalness: 0.7 }));
+
+  for (let i = 0; i < 12; i++) {
+    const ring = new THREE.Mesh(
+      new THREE.TorusGeometry(0.55 + i * 0.08, 0.005, 6, 80),
+      new THREE.MeshStandardMaterial({ color: 0x2a1a3e, roughness: 0.5 })
+    );
+    ring.rotation.x = Math.PI / 2;
+    record.add(ring);
+  }
+
+  const tex = new THREE.TextureLoader().load('logo.png', undefined, undefined, () => {});
+  const label = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.42, 0.42, 0.08, 40),
+    new THREE.MeshStandardMaterial({ map: tex, color: 0x5c1049, roughness: 0.6, metalness: 0.2 })
+  );
+  record.add(label);
+  record.add(new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.12, 20), new THREE.MeshStandardMaterial({ color: 0x000000 })));
+  scene.add(record);
+
+  scene.add(Object.assign(new THREE.AmbientLight(0xffffff), { intensity: 0.4 }));
+  const dir = new THREE.DirectionalLight(0xed24c8, 2.2); dir.position.set(3, 5, 4); scene.add(dir);
+  const rim = new THREE.DirectionalLight(0x6b1059, 1.0); rim.position.set(-4, -2, -3); scene.add(rim);
+
+  const bounds = { x: 2.8, y: 1.6 }, pos = { x: 0, y: 0 }, vel = { x: 0.012, y: 0.009 }, tilt = { x: 0.4, y: -0.3 };
+  (function animate() {
+    requestAnimationFrame(animate);
+    record.rotation.y += 0.018;
+    pos.x += vel.x; pos.y += vel.y;
+    if (Math.abs(pos.x) > bounds.x) { vel.x *= -1; tilt.y *= -1; }
+    if (Math.abs(pos.y) > bounds.y) { vel.y *= -1; tilt.x *= -1; }
+    record.position.set(pos.x, pos.y, 0);
+    record.rotation.x += (tilt.x - record.rotation.x) * 0.02;
+    record.rotation.z += (tilt.y * 0.3 - record.rotation.z) * 0.02;
+    renderer.render(scene, camera);
+  })();
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+})();
+
+// ── NAV ──────────────────────────────────────────────────────────────────
+const nav = document.getElementById('nav');
+const navLinks = document.getElementById('navLinks');
+window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 50));
+document.getElementById('navToggle').addEventListener('click', () => navLinks.classList.toggle('open'));
+navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => navLinks.classList.remove('open')));
+
+// ── SCROLL REVEAL ─────────────────────────────────────────────────────────
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('on'); obs.unobserve(e.target); } });
+}, { threshold: 0.08 });
+document.querySelectorAll('.rv').forEach(el => obs.observe(el));
+
+// ── KONZERT SORT ──────────────────────────────────────────────────────────
+document.querySelectorAll('.s-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.s-btn').forEach(b => b.classList.remove('a'));
+    btn.classList.add('a');
+    const list = document.getElementById('concertList');
+    const items = [...list.querySelectorAll('.c-item')];
+    const sort = btn.dataset.sort;
+    items.sort((a, b) => {
+      if (sort === 'date-asc')  return a.dataset.date.localeCompare(b.dataset.date);
+      if (sort === 'date-desc') return b.dataset.date.localeCompare(a.dataset.date);
+      if (sort === 'city')      return a.dataset.city.localeCompare(b.dataset.city);
+    });
+    items.forEach(i => list.prepend(i));
+  });
+});
+
+// ── REPERTOIRE TABS ───────────────────────────────────────────────────────
+document.querySelectorAll('.rep-cat').forEach(cat => {
+  cat.addEventListener('click', () => {
+    document.querySelectorAll('.rep-cat').forEach(c => c.classList.remove('a'));
+    cat.classList.add('a');
+    document.querySelectorAll('.rep-pane').forEach(p => p.classList.remove('a'));
+    document.getElementById('rep-' + cat.dataset.rep).classList.add('a');
+  });
+});
+</script>
+</body>
+</html>
