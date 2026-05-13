@@ -366,13 +366,13 @@
   backface-visibility:hidden;
 }
 .gf-cover-left-face {
-  background: linear-gradient(160deg, #1a0d25, #0d0818);
-  border:1px solid var(--border);
+  background: url('cover-bigband.png') center/cover no-repeat;
+  border: 1px solid var(--border);
 }
 .gf-cover-right-face {
-  background: linear-gradient(135deg, #200d2e, #0d0818);
-  border:1px solid var(--border);
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.4rem;
+  background: url('cover-bigband.png') center/cover no-repeat;
+  background-position: right center;
+  border: 1px solid var(--border);
 }
 .gf-cover-title { font-family:var(--display); font-size:clamp(1.6rem,5vw,3rem); color:var(--pink); letter-spacing:0.1em; }
 .gf-cover-sub { font-family:var(--mono); font-size:0.55rem; letter-spacing:0.25em; color:var(--muted); text-transform:uppercase; }
@@ -385,21 +385,28 @@
 }
 
 /* 2D Vinyl */
-.vinyl-2d {
-  width:min(150px,32vw); height:min(150px,32vw); border-radius:50%;
+.vinyl-2d.bigband {
+  width: min(160px, 34vw); height: min(160px, 34vw);
   background:
     radial-gradient(circle, #000 0%, #000 7%, transparent 7%),
     radial-gradient(circle, var(--pink-dim) 0%, var(--pink-dim) 26%, transparent 26%),
     repeating-radial-gradient(circle, #0f0f0f 0px, #1c1c1c 1.5px, #0f0f0f 3px);
-  position:relative; box-shadow:0 0 40px rgba(237,36,200,0.3);
-  opacity:0; transition:opacity 0.6s; animation:vinylSpin 4s linear infinite;
-  animation-play-state: paused;
+  box-shadow: 0 0 50px rgba(237,36,200,0.4);
 }
-.vinyl-2d.open { opacity:1; animation-play-state: running; }
-.vinyl-2d::after {
-  content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-  width:26%; height:26%; border-radius:50%;
-  background:radial-gradient(circle, var(--pink) 0%, var(--pink-dim) 100%);
+.vinyl-2d.bigband::after {
+  background: url('logo.png') center/70% no-repeat, radial-gradient(circle, var(--pink) 0%, var(--pink-dim) 100%);
+}
+
+.vinyl-2d.combo {
+  width: min(120px, 26vw); height: min(120px, 26vw);
+  background:
+    radial-gradient(circle, #000 0%, #000 8%, transparent 8%),
+    radial-gradient(circle, #3d1060 0%, #3d1060 30%, transparent 30%),
+    repeating-radial-gradient(circle, #12082a 0px, #1e0f3a 1.5px, #12082a 3px);
+  box-shadow: 0 0 30px rgba(120,40,200,0.5);
+}
+.vinyl-2d.combo::after {
+  background: url('logo.png') center/70% no-repeat, radial-gradient(circle, #b060ff 0%, #5a1090 100%);
 }
 @keyframes vinylSpin { to { transform:rotate(360deg); } }
 
@@ -813,30 +820,61 @@ document.querySelectorAll('.rep-cat').forEach(cat => {
   });
 });
   // ── RELEASES / GATEFOLD ───────────────────────────────────────────────────
+// ── RELEASES / GATEFOLD ────────────────────────────────────────────────
 const releases = [
   {
     label: 'Bigband Album',
-    title: 'Titel Placeholder',
-    tracks: ['Track Placeholder', 'Track Placeholder', 'Track Placeholder', 'Track Placeholder', 'Track Placeholder'],
-    date: 'Erscheint: Bald ✦'
+    title: 'Youlity Bigband',
+    tracks: [
+      'North Africa – Chick Corea, Arr. Mike Tomaro',
+      'Chips n\'Salsa – Gerald Albright, Arr. Harry Kim',
+      'Not to be Forgotten – Pat Metheny, Arr. Bob Curnow',
+      'You & Me – Disclosure, Arr. Mark Rock Borissov',
+      'Feels so Good – Chuck Mangione, Arr. Victor López',
+      'Shofukan – Michael League, Arr. Mackinley Hill'
+    ],
+    date: 'Erscheint bald ✦',
+    vinylClass: 'bigband',
+    coverImg: 'cover-bigband.png'
   },
   {
     label: 'Combo Single',
-    title: 'Titel Placeholder',
-    tracks: ['A-Seite: Track Placeholder', 'B-Seite: Track Placeholder'],
-    date: 'Erscheint: Bald ✦'
+    title: 'Youlity Combo',
+    tracks: [
+      'Hold the Line – Toto, Arr. Youlity Combo',
+      'I will Survive – Gloria Gaynor, Arr. Youlity Combo',
+      'Bonustrack: Smalltown Boy – Bronski Beat'
+    ],
+    date: 'Erscheint bald ✦',
+    vinylClass: 'combo',
+    coverImg: 'cover-combo.png'
   }
 ];
 
 let currentRel = 0;
+
 function renderRelease() {
   const r = releases[currentRel];
+
+  // tracklist
   document.getElementById('gfTracklist').innerHTML =
     `<h4>${r.label}</h4>
      <div class="gf-release-title">${r.title}</div>
      ${r.tracks.map((t,i) => `<div class="gf-track">${String(i+1).padStart(2,'0')}  ${t}</div>`).join('')}
      <div class="gf-date">${r.date}</div>`;
+
+  // vinyl style
+  const v = document.getElementById('vinyl2d');
+  v.className = 'vinyl-2d ' + (v.classList.contains('open') ? 'open ' : '') + r.vinylClass;
+
+  // cover images: left = back (right half of image), right = front (left half of image)
+  document.querySelector('.gf-cover-left-face').style.background =
+    `url('${r.coverImg}') left center / 200% auto no-repeat`;
+  document.querySelector('.gf-cover-right-face').style.background =
+    `url('${r.coverImg}') right center / 200% auto no-repeat`;
+  document.querySelector('.gf-cover-right-face').style.flexDirection = 'column';
 }
+
 renderRelease();
 
 document.querySelectorAll('.rel-tab').forEach(tab => {
@@ -844,7 +882,13 @@ document.querySelectorAll('.rel-tab').forEach(tab => {
     document.querySelectorAll('.rel-tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     currentRel = parseInt(tab.dataset.rel);
+    // reset cover before re-render
+    gfLeft.style.transform  = 'rotateY(0deg)';
+    gfRight.style.transform = 'rotateY(0deg)';
+    document.getElementById('vinyl2d').classList.remove('open');
     renderRelease();
+    // scroll back to top of section
+    document.getElementById('releases').scrollIntoView({ behavior: 'smooth' });
   });
 });
 
@@ -859,13 +903,12 @@ window.addEventListener('scroll', () => {
   const maxScroll = releasesSec.offsetHeight - window.innerHeight;
   const p = Math.max(0, Math.min(1, scrolled / maxScroll));
 
-  // 0–0.6: cover opens
+  // covers öffnen sich nach VORNE/AUSSEN (nicht nach hinten)
   const open = Math.min(1, p / 0.6);
-  const angle = open * 172;
-  gfLeft.style.transform  = `rotateY(${-angle}deg)`;
-  gfRight.style.transform = `rotateY(${angle}deg)`;
+  const angle = open * 168;
+  gfLeft.style.transform  = `rotateY(${angle}deg)`;   // ← nach links öffnen
+  gfRight.style.transform = `rotateY(${-angle}deg)`;  // → nach rechts öffnen
 
-  // 0.35+: record spins in
   vinyl2d.classList.toggle('open', p > 0.35);
 }, { passive: true });
 </script>
