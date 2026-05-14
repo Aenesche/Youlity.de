@@ -767,9 +767,17 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 
 // ── INTRO ─────────────────────────────────────────────────────────────
 const intro = document.getElementById('intro');
+
+// Scroll blockieren + ans Top springen
+window.scrollTo(0, 0);
+document.body.style.overflow = 'hidden';
+
 intro.classList.add('hide');
 intro.addEventListener('animationend', e => {
-  if (e.animationName === 'introOut') intro.style.display = 'none';
+  if (e.animationName === 'introOut') {
+    intro.style.display = 'none';
+    document.body.style.overflow = '';  // Scroll wieder freigeben
+  }
 });
 
 // ── VINYL BACKGROUND ─────────────────────────────────────────────────
