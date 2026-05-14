@@ -828,56 +828,19 @@ document.querySelectorAll('.rep-cat').forEach(cat => {
     document.getElementById('rep-' + cat.dataset.rep).classList.add('a');
   });
 });
-  // ── RELEASES / GATEFOLD ───────────────────────────────────────────────────
-// ── RELEASES / GATEFOLD ────────────────────────────────────────────────
-const releases = [
-  {
-    label: 'Bigband Album',
-    title: 'Youlity Bigband',
-    tracks: [
-      'North Africa – Chick Corea, Arr. Mike Tomaro',
-      'Chips n\'Salsa – Gerald Albright, Arr. Harry Kim',
-      'Not to be Forgotten – Pat Metheny, Arr. Bob Curnow',
-      'You & Me – Disclosure, Arr. Mark Rock Borissov',
-      'Feels so Good – Chuck Mangione, Arr. Victor López',
-      'Shofukan – Michael League, Arr. Mackinley Hill'
-    ],
-    date: 'Erscheint bald ✦',
-    vinylClass: 'bigband',
-    coverImg: 'cover-bigband.png'
-  },
-  {
-    label: 'Combo Single',
-    title: 'Youlity Combo',
-    tracks: [
-      'Hold the Line – Toto, Arr. Youlity Combo',
-      'I will Survive – Gloria Gaynor, Arr. Youlity Combo',
-      'Bonustrack: Smalltown Boy – Bronski Beat'
-    ],
-    date: 'Erscheint bald ✦',
-    vinylClass: 'combo',
-    coverImg: 'cover-combo.png'
-  }
-];
-
-let currentRel = 0;
-
-function renderRelease() {
-  // ── RELEASES / GATEFOLD ────────────────────────────────────────────────
+ // ── RELEASES / GATEFOLD ──────────────────────────────────────────────────
 const releases = [
   {
     label: 'Bigband Album', title: 'Youlity Bigband',
     tracks: [
       'North Africa – Chick Corea, Arr. Mike Tomaro',
-      'Chips n\'Salsa – Gerald Albright, Arr. Harry Kim',
+      "Chips n'Salsa – Gerald Albright, Arr. Harry Kim",
       'Not to be Forgotten – Pat Metheny, Arr. Bob Curnow',
       'You & Me – Disclosure, Arr. Mark Rock Borissov',
       'Feels so Good – Chuck Mangione, Arr. Victor López',
       'Shofukan – Michael League, Arr. Mackinley Hill'
     ],
-    date: 'Erscheint bald ✦',
-    vinylClass: 'bigband',
-    img: 'cover-bigband.png'
+    date: 'Erscheint bald ✦', vinylClass: 'bigband', img: 'cover-bigband.png'
   },
   {
     label: 'Combo Single', title: 'Youlity Combo',
@@ -886,35 +849,28 @@ const releases = [
       'I will Survive – Gloria Gaynor, Arr. Youlity Combo',
       'Bonustrack: Smalltown Boy – Bronski Beat'
     ],
-    date: 'Erscheint bald ✦',
-    vinylClass: 'combo',
-    img: 'cover-combo.png'
+    date: 'Erscheint bald ✦', vinylClass: 'combo', img: 'cover-combo.png'
   }
 ];
 
 let currentRel = 0;
-const gfLeft        = document.getElementById('gfCoverLeft');
-const gfRight       = document.getElementById('gfCoverRight');
+const gfLeft          = document.getElementById('gfCoverLeft');
+const gfRight         = document.getElementById('gfCoverRight');
 const coverLeftFront  = document.getElementById('coverLeftFront');
 const coverRightFront = document.getElementById('coverRightFront');
-const vinyl2d       = document.getElementById('vinyl2d');
+const vinyl2d         = document.getElementById('vinyl2d');
 
 function renderRelease() {
   const r = releases[currentRel];
-
   document.getElementById('gfTracklist').innerHTML =
     `<h4>${r.label}</h4>
      <div class="gf-release-title">${r.title}</div>
-     ${r.tracks.map((t,i)=>`<div class="gf-track">${String(i+1).padStart(2,'0')}  ${t}</div>`).join('')}
+     ${r.tracks.map((t,i) => `<div class="gf-track">${String(i+1).padStart(2,'0')}  ${t}</div>`).join('')}
      <div class="gf-date">${r.date}</div>`;
-
-  // Bild: links = Rückseite (linke Bildhälfte), rechts = Vorderseite (rechte Bildhälfte)
   coverLeftFront.style.cssText  = `background:url('${r.img}') left center/200% auto no-repeat; border:1px solid rgba(237,36,200,0.2);`;
   coverRightFront.style.cssText = `background:url('${r.img}') right center/200% auto no-repeat; border:1px solid rgba(237,36,200,0.2);`;
-
   vinyl2d.className = 'vinyl-2d ' + r.vinylClass + (vinyl2d.classList.contains('open') ? ' open' : '');
 }
-
 renderRelease();
 
 document.querySelectorAll('.rel-tab').forEach(tab => {
@@ -922,7 +878,6 @@ document.querySelectorAll('.rel-tab').forEach(tab => {
     document.querySelectorAll('.rel-tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     currentRel = parseInt(tab.dataset.rel);
-    // Cover schließen, dann neu rendern
     gfLeft.style.transform  = 'rotateY(0deg)';
     gfRight.style.transform = 'rotateY(0deg)';
     vinyl2d.classList.remove('open');
@@ -933,14 +888,12 @@ document.querySelectorAll('.rel-tab').forEach(tab => {
 
 const releasesSec = document.getElementById('releases');
 window.addEventListener('scroll', () => {
-  const scrolled = -releasesSec.getBoundingClientRect().top;
+  const scrolled  = -releasesSec.getBoundingClientRect().top;
   const maxScroll = releasesSec.offsetHeight - window.innerHeight;
   const p = Math.max(0, Math.min(1, scrolled / maxScroll));
-
   const angle = Math.min(1, p / 0.65) * 170;
-  gfLeft.style.transform  = `rotateY(${-angle}deg)`;  // nach links aufklappen
-  gfRight.style.transform = `rotateY(${angle}deg)`;   // nach rechts aufklappen
-
+  gfLeft.style.transform  = `rotateY(${-angle}deg)`;
+  gfRight.style.transform = `rotateY(${angle}deg)`;
   vinyl2d.classList.toggle('open', p > 0.3);
 }, { passive: true });
 </script>
