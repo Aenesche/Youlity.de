@@ -340,11 +340,12 @@
 }
 .gf-inner {
   position: relative; width: 100%; aspect-ratio: 2 / 1;
-  transform-style: preserve-3d;
+  /* preserve-3d raus – sonst ignoriert Browser z-index */
 }
 .gf-inside-left, .gf-inside-right {
   position: absolute; top: 0; height: 100%;
   border: 1px solid var(--border);
+  z-index: 1;  /* ← Innenseite liegt unten */
 }
 .gf-inside-left {
   left: 0; width: 50%; background: #1a0d25;
@@ -357,6 +358,7 @@
 .gf-cover-left, .gf-cover-right {
   position: absolute; top: 0; height: 100%; width: 50%;
   transform-style: preserve-3d;
+  z-index: 2;  /* ← Cover liegt oben */
 }
 .gf-cover-left  { left: 0;  transform-origin: right center; }
 .gf-cover-right { right: 0; transform-origin: left center; }
