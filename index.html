@@ -107,90 +107,93 @@
     .c-tag.up{border-color:var(--pink);color:var(--pink);}
     .c-empty{padding:2.5rem;text-align:center;font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;background:var(--bg);}
 
-    /* ── RELEASES / GATEFOLD ── */
-    #releases{height:500vh;position:relative;}
-    .rel-sticky{
-      position:sticky;top:0;height:100vh;
-      display:flex;flex-direction:column;align-items:center;justify-content:center;
-      padding:1.5rem;overflow:hidden;
+    /* GATEFOLD */
+    #releases { height: 400vh; position: relative; }
+    .sticky {
+      position: sticky; top: 0; height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 1.5rem;
     }
-    /* sleeve container */
-    .sleeve-persp{perspective:1200px;}
-    .sleeve{
-      position:relative;
-      width:min(400px,86vw);
-      aspect-ratio:1/1;
-    }
-    /* shared half styles */
-    .sl-half{
-      position:absolute;top:0;height:100%;width:50%;
-      display:flex;align-items:center;justify-content:center;
-      border:1px solid var(--border);overflow:hidden;
-    }
-    .sl-left{left:0;background:#1a0d25;padding:1.2rem;}
-    .sl-right{right:0;background:#0e0b1a;}
-    /* 3D flip panels */
-    .sl-flip{
-      position:absolute;top:0;height:100%;
-      transform-style:preserve-3d;
-    }
-    .sl-flip-full{left:0;width:100%;transform-origin:left center;z-index:4;}
-    .sl-flip-right{right:0;width:50%;transform-origin:left center;z-index:3;}
-    .sl-face{
-      position:absolute;inset:0;
-      backface-visibility:hidden;
-      -webkit-backface-visibility:hidden;
-    }
-    .sl-face-b{transform:rotateY(180deg);}
+    .hint { font-size:.55rem; letter-spacing:.25em; color:var(--muted); text-transform:uppercase; transition:opacity .4s; }
+    .gf-wrap { perspective: 1400px; }
+    .gf { position:relative; width:min(720px,94vw); aspect-ratio:2/1; }
+    .panel { position:absolute; top:0; left:50%; width:50%; height:100%; }
 
-    /* tracklist inside sleeve */
-    .gf-tl{text-align:left;width:100%;}
-    .gf-tl h4{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.22em;color:var(--pink);text-transform:uppercase;margin-bottom:.6rem;}
-    .gf-tl .gf-release-title{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--text);letter-spacing:.05em;margin-bottom:.4rem;}
-    .gf-tl .gf-track{font-family:'Space Mono',monospace;font-size:.48rem;letter-spacing:.05em;color:var(--muted);padding:.22rem 0;border-bottom:1px solid rgba(237,36,200,.07);line-height:1.4;}
-    .gf-tl .gf-date{font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.12em;color:var(--pink);margin-top:.7rem;}
+    /* Panel 5 */
+    #p5 { z-index:1; background:#080514; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; }
 
-    /* 2D vinyl record */
-    .vinyl-2d{
-      border-radius:50%;opacity:0;
-      transition:opacity .6s;
-      animation:vinylSpin 4s linear infinite;
-      animation-play-state:paused;
-      position:relative;flex-shrink:0;
-    }
-    .vinyl-2d.open{opacity:1;animation-play-state:running;}
-    .vinyl-2d::after{
-      content:'';position:absolute;top:50%;left:50%;
-      transform:translate(-50%,-50%);border-radius:50%;
-      background-size:70%;background-position:center;background-repeat:no-repeat;
-    }
-    .vinyl-2d.bigband{
-      width:min(150px,28vw);height:min(150px,28vw);
+    /* small vinyl (combo, panel 5) */
+    .vinyl-sm {
+      width:min(145px,26vw); height:min(145px,26vw);
+      border-radius:50%; flex-shrink:0; position:relative;
       background:
         radial-gradient(circle,#000 0%,#000 7%,transparent 7%),
-        radial-gradient(circle,#5c1049 0%,#5c1049 26%,transparent 26%),
+        radial-gradient(circle,var(--pink-dim) 0%,var(--pink-dim) 26%,transparent 26%),
         repeating-radial-gradient(circle,#0f0f0f 0px,#1c1c1c 1.5px,#0f0f0f 3px);
-      box-shadow:0 0 50px rgba(237,36,200,.45);
+      /* ↓ much brighter glow */
+      box-shadow: 0 0 25px 8px rgba(237,36,200,0.7), 0 0 60px 15px rgba(237,36,200,0.35);
+      animation:spin 5s linear infinite;
     }
-    .vinyl-2d.bigband::after{width:28%;height:28%;background-image:url('logo.png');background-color:var(--pink);}
-    .vinyl-2d.combo{
-      width:min(110px,22vw);height:min(110px,22vw);
-      background:
-        radial-gradient(circle,#000 0%,#000 8%,transparent 8%),
-        radial-gradient(circle,#3d1060 0%,#3d1060 30%,transparent 30%),
-        repeating-radial-gradient(circle,#12082a 0px,#1e0f3a 1.5px,#12082a 3px);
-      box-shadow:0 0 35px rgba(140,50,220,.5);
+    .vinyl-sm::after {
+      content:''; position:absolute; top:50%; left:50%;
+      transform:translate(-50%,-50%);
+      width:28%; height:28%; border-radius:50%;
+      background:url('logo.png') center/70% no-repeat, var(--pink);
     }
-    .vinyl-2d.combo::after{width:28%;height:28%;background-image:url('logo.png');background-color:#9040e0;}
-    @keyframes vinylSpin{to{transform:rotate(360deg);}}
 
-    /* phase label */
-    .rel-phase-hint{
-      margin-top:1.2rem;
-      font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.2em;
-      color:var(--muted);text-transform:uppercase;
-      transition:opacity .4s;
+    /* big css vinyl (bigband, panel 3) */
+    .css-vinyl {
+      opacity:0; transition:opacity .5s;
+      width:min(240px,43vw); height:min(240px,43vw);
+      border-radius:50%; position:relative; flex-shrink:0;
+      background:
+        radial-gradient(circle,#000 0%,#000 4%,transparent 4%),
+        radial-gradient(circle,#9040e0 0%,#5c1049 18%,transparent 18%),
+        repeating-radial-gradient(circle,
+          #0c0c1a 0px,#181828 1px,#0c0c1a 2.5px,#1a1a2e 3.5px,
+          #0c0c1a 5px,#161626 6px,#0c0c1a 7.5px);
+      /* ↓ much brighter glow */
+      box-shadow:
+        0 0 0 1px rgba(237,36,200,0.3),
+        0 0 30px 10px rgba(237,36,200,0.65),
+        0 0 80px 20px rgba(140,50,220,0.45),
+        inset 0 0 30px rgba(0,0,0,0.8);
+      animation:spin 6s linear infinite;
     }
+    .css-vinyl::before {
+      content:''; position:absolute; inset:0; border-radius:50%;
+      background:conic-gradient(
+        from 30deg,
+        transparent 0deg, rgba(237,36,200,0.12) 40deg, transparent 80deg,
+        rgba(255,255,255,0.05) 160deg, transparent 200deg,
+        rgba(140,50,220,0.09) 280deg, transparent 360deg);
+    }
+    .css-vinyl::after {
+      content:''; position:absolute; top:50%; left:50%;
+      transform:translate(-50%,-50%);
+      width:18%; height:18%; border-radius:50%;
+      background:url('logo.png') center/75% no-repeat, #9040e0;
+    }
+
+    /* card 3/4 */
+    #card34 { z-index:2; transform-origin:left center; transform-style:preserve-3d; }
+    #p3 { position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; background:#0e0b1a; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; }
+    #p4 { position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; transform:rotateY(180deg); background:#1a0d25; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; padding:1.8rem; }
+
+    /* card 1/2 */
+    #card12 { z-index:3; transform-origin:left center; transform-style:preserve-3d; }
+    #p1 { position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; background:url('cover-front.png') center/cover no-repeat, #200d2e; border:1px solid var(--border); }
+    #p2 { position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; transform:rotateY(180deg); background:#1a0d25; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; padding:1.8rem; }
+
+    /* tracklist — bigger + brighter */
+    .tl { width:100%; }
+    .tl-label  { font-size:.65rem; letter-spacing:.22em; color:var(--pink); text-transform:uppercase; margin-bottom:.5rem; }
+    .tl-title  { font-family:'Bebas Neue',sans-serif; font-size:clamp(1.2rem,3.5vw,1.8rem); color:#fff; letter-spacing:.05em; margin-bottom:.7rem; }
+    .tl-track  { font-size:.58rem; letter-spacing:.05em; color:#c8bedd; padding:.28rem 0; border-bottom:1px solid rgba(237,36,200,0.12); line-height:1.5; }
+    .tl-date   { font-size:.6rem; letter-spacing:.14em; color:var(--pink); margin-top:.8rem; }
+
+    @keyframes spin { to { transform:rotate(360deg); } }
 
     /* HISTORY */
     #history{padding:8rem 0;background:linear-gradient(to bottom,transparent,var(--surface),transparent);}
@@ -277,266 +280,29 @@
       .p-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:140px;}
       .p-item{grid-column:span 1!important;grid-row:span 1!important;}
       footer{padding:1.5rem;flex-direction:column;text-align:center;}
-      .sl-flip-full,.sl-flip-right{/* same */}
     }
 
-    /* ── GATEFOLD / RELEASES ── */
-/* ── tall scroll container ── */
-    #scene { height: 400vh; position: relative; }
-
-    /* ── sticky viewport ── */
-    .sticky {
-      position: sticky; top: 0; height: 100vh;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 1.5rem;
-    }
-
-    .hint {
-      font-size: 0.55rem; letter-spacing: 0.25em; color: var(--muted);
-      text-transform: uppercase; transition: opacity 0.4s;
-    }
-
-    /* ── the gatefold wrapper ──
-       2:1 ratio — left half is where opened panels land,
-       right half is where all panels start (stacked)       */
-    .gf-wrap { perspective: 1400px; }
-    .gf {
-      position: relative;
-      width: min(720px, 94vw);
-      aspect-ratio: 2 / 1;
-    }
-
-    /* ── shared panel base ──
-       All panels are 1:1, positioned at the RIGHT half   */
-    .panel {
-      position: absolute;
-      top: 0; left: 50%;   /* right half */
-      width: 50%; height: 100%;
-    }
-
-    /* ── Panel 5: static base with vinyl disc ── */
-    #p5 {
-      z-index: 1;
-      background: #080514;
-      border: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-    }
-
-    /* small vinyl for panel 5 */
-    .vinyl-sm {
-      width: min(145px, 26vw);
-      height: min(145px, 26vw);
-      border-radius: 50%;
-      flex-shrink: 0;
-      position: relative;
-      background:
-        radial-gradient(circle, #000 0%, #000 7%, transparent 7%),
-        radial-gradient(circle, var(--pink-dim) 0%, var(--pink-dim) 26%, transparent 26%),
-        repeating-radial-gradient(circle, #0f0f0f 0px, #1c1c1c 1.5px, #0f0f0f 3px);
-      box-shadow: 0 0 30px rgba(237,36,200,0.3);
-      animation: spin 5s linear infinite;
-    }
-    .vinyl-sm::after {
-      content: '';
-      position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      width: 28%; height: 28%;
-      border-radius: 50%;
-      background: url('logo.png') center/70% no-repeat, var(--pink);
-    }
-
-    /* CSS vinyl disc - same vibe as the 3D background record */
-    .css-vinyl {
-      opacity: 0; transition: opacity 0.5s;
-      width: min(240px, 43vw);
-      height: min(240px, 43vw);
-      border-radius: 50%;
-      position: relative;
-      flex-shrink: 0;
-      background:
-        radial-gradient(circle, #000 0%, #000 4%, transparent 4%),
-        radial-gradient(circle, #9040e0 0%, #5c1049 18%, transparent 18%),
-        repeating-radial-gradient(circle,
-          #0c0c1a 0px, #181828 1px, #0c0c1a 2.5px, #1a1a2e 3.5px,
-          #0c0c1a 5px, #161626 6px, #0c0c1a 7.5px
-        );
-      box-shadow:
-        0 0 0 1px rgba(237,36,200,0.15),
-        0 0 40px rgba(140,50,220,0.35),
-        inset 0 0 30px rgba(0,0,0,0.8);
-      animation: spin 6s linear infinite;
-    }
-    .css-vinyl::before {
-      content: '';
-      position: absolute; inset: 0;
-      border-radius: 50%;
-      background: conic-gradient(
-        from 30deg,
-        transparent 0deg,
-        rgba(237,36,200,0.08) 40deg,
-        transparent 80deg,
-        rgba(255,255,255,0.04) 160deg,
-        transparent 200deg,
-        rgba(140,50,220,0.06) 280deg,
-        transparent 360deg
-      );
-    }
-    .css-vinyl::after {
-      content: '';
-      position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      width: 18%; height: 18%;
-      border-radius: 50%;
-      background: url('logo.png') center/75% no-repeat, #9040e0;
-    }
-
-    /* ── Card 3/4: Vinyl front / Single-text back ── */
-    #card34 {
-      z-index: 2;
-      transform-origin: left center;
-      transform-style: preserve-3d;
-    }
-    #p3 {  /* front: vinyl */
-      position: absolute; inset: 0;
-      backface-visibility: hidden; -webkit-backface-visibility: hidden;
-      background: #0e0b1a;
-      border: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-    }
-    #p4 {  /* back: single text */
-      position: absolute; inset: 0;
-      backface-visibility: hidden; -webkit-backface-visibility: hidden;
-      transform: rotateY(180deg);
-      background: #1a0d25;
-      border: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-      padding: 1.8rem;
-    }
-
-    /* ── Card 1/2: Cover front / Tracklist back ── */
-    #card12 {
-      z-index: 3;
-      transform-origin: left center;
-      transform-style: preserve-3d;
-    }
-    #p1 {  /* front: cover art */
-      position: absolute; inset: 0;
-      backface-visibility: hidden; -webkit-backface-visibility: hidden;
-      background: url('cover-front.png') center / cover no-repeat, #200d2e;
-      border: 1px solid var(--border);
-    }
-    #p2 {  /* back: tracklist */
-      position: absolute; inset: 0;
-      backface-visibility: hidden; -webkit-backface-visibility: hidden;
-      transform: rotateY(180deg);
-      background: #1a0d25;
-      border: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-      padding: 1.8rem;
-    }
-
-    /* ── tracklist typography ── */
-    .tl { width: 100%; }
-    .tl-label { font-size: 0.5rem; letter-spacing: 0.22em; color: var(--pink); text-transform: uppercase; margin-bottom: 0.5rem; }
-    .tl-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1rem, 3vw, 1.5rem); color: var(--text); letter-spacing: 0.05em; margin-bottom: 0.6rem; }
-    .tl-track { font-size: 0.42rem; letter-spacing: 0.05em; color: var(--muted); padding: 0.22rem 0; border-bottom: 1px solid rgba(237,36,200,0.08); line-height: 1.4; }
-    .tl-date { font-size: 0.48rem; letter-spacing: 0.12em; color: var(--pink); margin-top: 0.7rem; }
-
-    /* ── 2D vinyl disc ── */
-    .vinyl {
-      border-radius: 50%;
-      flex-shrink: 0;
-      width: min(160px, 28vw); height: min(160px, 28vw);
-      background:
-        radial-gradient(circle, #000 0%, #000 7%, transparent 7%),
-        radial-gradient(circle, var(--pink-dim) 0%, var(--pink-dim) 26%, transparent 26%),
-        repeating-radial-gradient(circle, #0f0f0f 0px, #1c1c1c 1.5px, #0f0f0f 3px);
-      box-shadow: 0 0 50px rgba(237,36,200,0.4);
-      position: relative;
-      opacity: 0; transition: opacity 0.5s;
-      animation: spin 4s linear infinite;
-      animation-play-state: paused;
-    }
-    .vinyl.on { opacity: 1; animation-play-state: running; }
-    .vinyl::after {
-      content: ''; position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%,-50%);
-      width: 28%; height: 28%; border-radius: 50%;
-      background: url('logo.png') center/70% no-repeat, var(--pink);
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ── combo vinyl (smaller, different tint) ── */
-    .vinyl-combo {
-      border-radius: 50%;
-      flex-shrink: 0;
-      width: min(145px, 26vw); height: min(145px, 26vw);
-      background:
-        radial-gradient(circle, #000 0%, #000 8%, transparent 8%),
-        radial-gradient(circle, #3d1060 0%, #3d1060 30%, transparent 30%),
-        repeating-radial-gradient(circle, #12082a 0px, #1e0f3a 1.5px, #12082a 3px);
-      box-shadow: 0 0 35px rgba(140,50,220,0.5);
-      position: relative;
-    }
-    .vinyl-combo::after {
-      content: ''; position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%,-50%);
-      width: 28%; height: 28%; border-radius: 50%;
-      background: url('logo.png') center/70% no-repeat, #9040e0;
-    }
-  
-
-    /* ── THEMES ── */
+    /* THEMES */
     [data-theme="light"] {
-      --bg:       #fafafa;
-      --surface:  #f0edf6;
-      --pink:     #c41aaa;
-      --pink-dim: #8a1278;
-      --pink-glow:rgba(196,26,170,0.1);
-      --text:     #1a0d2e;
-      --muted:    #7a6a8a;
-      --border:   rgba(180,20,150,0.2);
+      --bg:#fafafa; --surface:#f0edf6; --pink:#c41aaa; --pink-dim:#8a1278;
+      --pink-glow:rgba(196,26,170,0.1); --text:#1a0d2e; --muted:#7a6a8a;
+      --border:rgba(180,20,150,0.2);
     }
     [data-theme="solar"] {
-      --bg:       #fdf6e3;
-      --surface:  #eee8d5;
-      --pink:     #b5006e;
-      --pink-dim: #7a004a;
-      --pink-glow:rgba(181,0,110,0.1);
-      --text:     #3a2a1a;
-      --muted:    #8a7060;
-      --border:   rgba(150,80,0,0.2);
+      --bg:#fdf6e3; --surface:#eee8d5; --pink:#b5006e; --pink-dim:#7a004a;
+      --pink-glow:rgba(181,0,110,0.1); --text:#3a2a1a; --muted:#8a7060;
+      --border:rgba(150,80,0,0.2);
     }
-
-    /* ── THEME SWITCH ── */
-    .theme-switch {
-      display: flex;
-      gap: 0;
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      overflow: hidden;
-      background: var(--surface);
-    }
-    .theme-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0.35rem 0.6rem;
-      font-size: 0.8rem;
-      color: var(--muted);
-      transition: background 0.2s, color 0.2s;
-      line-height: 1;
-    }
-    .theme-btn + .theme-btn { border-left: 1px solid var(--border); }
-    .theme-btn.active {
-      background: var(--pink-glow);
-      color: var(--pink);
-    }
-    .theme-btn:hover:not(.active) { color: var(--text); }
-
-    [data-theme="light"] #vinyl-canvas { opacity: 0.06; }
-    [data-theme="solar"] #vinyl-canvas { opacity: 0.07; }
+    .theme-switch{display:flex;gap:0;border:1px solid var(--border);border-radius:4px;overflow:hidden;background:var(--surface);}
+    .theme-btn{background:none;border:none;cursor:pointer;padding:.35rem .6rem;font-size:.8rem;color:var(--muted);transition:background .2s,color .2s;line-height:1;}
+    .theme-btn+.theme-btn{border-left:1px solid var(--border);}
+    .theme-btn.active{background:var(--pink-glow);color:var(--pink);}
+    .theme-btn:hover:not(.active){color:var(--text);}
+    [data-theme="light"] #vinyl-canvas{opacity:.06;}
+    [data-theme="solar"] #vinyl-canvas{opacity:.07;}
+    [data-theme="light"] #p3,[data-theme="light"] #p4,[data-theme="light"] #p2{ background:#e8e0f0; }
+    [data-theme="solar"] #p3,[data-theme="solar"] #p4,[data-theme="solar"] #p2{ background:#e8dfc8; }
+    [data-theme="light"] #p5,[data-theme="solar"] #p5{ background:var(--surface); }
   </style>
 </head>
 <body>
@@ -547,7 +313,6 @@
   <div class="intro-sub">Bigband &amp; Combo · Berlin</div>
 </div>
 
-<!-- VINYL BG -->
 <canvas id="vinyl-canvas"></canvas>
 
 <!-- NAV -->
@@ -558,20 +323,20 @@
   </button>
   <ul class="nav-links" id="navLinks">
     <li><a href="#about">Über uns</a></li>
-        <li><a href="#concerts">Konzerte</a></li>
-        <li><a href="#releases">Release</a></li>
-        <li><a href="#merch">Merch</a></li>
-        <li><a href="#videos">Videos</a></li>
+    <li><a href="#concerts">Konzerte</a></li>
+    <li><a href="#releases">Release</a></li>
+    <li><a href="#merch">Merch</a></li>
+    <li><a href="#videos">Videos</a></li>
     <li><a href="#members">Band</a></li>
     <li><a href="#photos">Fotos</a></li>
     <li><a href="#contact">Kontakt</a></li>
   </ul>
-    <div class="theme-switch" id="themeSwitch" style="margin-left:1rem;">
-      <button class="theme-btn active" data-t="dark"  title="Dark">◑</button>
-      <button class="theme-btn"        data-t="light" title="Light">○</button>
-      <button class="theme-btn"        data-t="solar" title="Solarized">◐</button>
-    </div>
-  </nav>
+  <div class="theme-switch" id="themeSwitch" style="margin-left:1rem;">
+    <button class="theme-btn active" data-t="dark"  title="Dark">◑</button>
+    <button class="theme-btn"        data-t="light" title="Light">○</button>
+    <button class="theme-btn"        data-t="solar" title="Solarized">◐</button>
+  </div>
+</nav>
 
 <!-- HERO -->
 <section id="hero">
@@ -612,7 +377,6 @@
   </div>
 </section>
 
-
 <!-- KONZERTE -->
 <section id="concerts">
   <div class="inner">
@@ -639,45 +403,27 @@
   </div>
 </section>
 
-
-<!-- ── RELEASES / GATEFOLD ── -->
-<div id="releases">
+<!-- RELEASES / GATEFOLD -->
+<div id="releases" style="height:400vh;position:relative;">
   <div class="sticky">
-
     <div class="hint" id="hint">↓ Scroll to open</div>
-
     <div class="gf-wrap">
       <div class="gf">
-
-        <!-- Panel 5: combo vinyl disc (base, never moves) -->
         <div class="panel" id="p5"><div class="vinyl-sm"></div></div>
-
-        <!-- Card 3/4: vinyl (front) / single text (back) -->
         <div class="panel" id="card34">
-          <div id="p3">
-            <div class="css-vinyl" id="vinyl"></div>
-          </div>
-          <div id="p4">
-            <div class="tl" id="tl4"></div>
-          </div>
+          <div id="p3"><div class="css-vinyl" id="vinyl"></div></div>
+          <div id="p4"><div class="tl" id="tl4"></div></div>
         </div>
-
-        <!-- Card 1/2: cover (front) / tracklist (back) -->
         <div class="panel" id="card12">
           <div id="p1"></div>
-          <div id="p2">
-            <div class="tl" id="tl2"></div>
-          </div>
+          <div id="p2"><div class="tl" id="tl2"></div></div>
         </div>
-
       </div>
     </div>
-
   </div>
 </div>
-</div>
 
-  <!-- MERCH -->
+<!-- MERCH -->
 <section id="merch">
   <div class="inner">
     <div class="s-tag rv">Shop</div>
@@ -696,23 +442,9 @@
     <div class="s-tag rv">Rückblick</div>
     <h2 class="s-title rv d1">AUFTRITTE &amp; <span class="o">PREISE</span></h2>
     <div class="h-grid">
-      <div class="h-item rv d1">
-        <div class="h-year">2023</div>
-        <div class="h-event">Jazztreff Placeholder</div>
-        <div class="h-place">Ort · Stadt</div>
-        <div class="h-award">Preis Placeholder</div>
-      </div>
-      <div class="h-item rv d2">
-        <div class="h-year">20XX</div>
-        <div class="h-event">Event Placeholder</div>
-        <div class="h-place">Ort · Stadt</div>
-      </div>
-      <div class="h-item rv d3">
-        <div class="h-year">20XX</div>
-        <div class="h-event">Konzert Placeholder</div>
-        <div class="h-place">Ort · Stadt</div>
-        <div class="h-award">1. Platz Placeholder</div>
-      </div>
+      <div class="h-item rv d1"><div class="h-year">2023</div><div class="h-event">Jazztreff Placeholder</div><div class="h-place">Ort · Stadt</div><div class="h-award">Preis Placeholder</div></div>
+      <div class="h-item rv d2"><div class="h-year">20XX</div><div class="h-event">Event Placeholder</div><div class="h-place">Ort · Stadt</div></div>
+      <div class="h-item rv d3"><div class="h-year">20XX</div><div class="h-event">Konzert Placeholder</div><div class="h-place">Ort · Stadt</div><div class="h-award">1. Platz Placeholder</div></div>
     </div>
   </div>
 </section>
@@ -739,7 +471,7 @@
   </div>
 </section>
 
-  <!-- VIDEOS -->
+<!-- VIDEOS -->
 <section id="videos">
   <div class="inner">
     <div class="s-tag rv">YouTube</div>
@@ -753,7 +485,7 @@
   </div>
 </section>
 
-  <!-- MITGLIEDER -->
+<!-- MITGLIEDER -->
 <section id="members">
   <div class="inner">
     <div class="s-tag rv">Die Band</div>
@@ -786,7 +518,6 @@
   </div>
 </section>
 
-
 <!-- KONTAKT -->
 <section id="contact">
   <div class="inner">
@@ -803,7 +534,6 @@
   </div>
 </section>
 
-<!-- FOOTER -->
 <footer>
   <div class="f-copy">© 2026 Youlity · Berlin</div>
   <div class="f-links">
@@ -814,63 +544,58 @@
 </footer>
 
 <script>
-// ── SUPABASE (bereit für später) ──────────────────────────────────────
 const SUPABASE_URL  = 'https://hmopcvtzhcevouwmdwxa.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhtb3BjdnR6aGNldm91d21kd3hhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzI3MTMsImV4cCI6MjA5NDI0ODcxM30.tyZHv56vvqGfcSBaTUhkOwzZjDsBpS2x7BzLJKS0Wzc';
 
-// ── INTRO ─────────────────────────────────────────────────────────────
+// INTRO
 const intro = document.getElementById('intro');
+window.scrollTo(0, 0);
+document.body.style.overflow = 'hidden';
 intro.classList.add('hide');
 intro.addEventListener('animationend', e => {
-  if (e.animationName === 'introOut') intro.style.display = 'none';
+  if (e.animationName === 'introOut') {
+    intro.style.display = 'none';
+    document.body.style.overflow = '';
+  }
 });
 
-// ── VINYL BACKGROUND ─────────────────────────────────────────────────
+// VINYL BG
 (function(){
   const canvas = document.getElementById('vinyl-canvas');
   const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  const scene  = new THREE.Scene();
+  const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 100);
   camera.position.z = 5;
-
   const record = new THREE.Mesh(
     new THREE.CylinderGeometry(1.5,1.5,0.07,64),
-    new THREE.MeshStandardMaterial({ color:0x0d0818, roughness:0.3, metalness:0.7 })
+    new THREE.MeshStandardMaterial({color:0x0d0818,roughness:.3,metalness:.7})
   );
   for(let i=0;i<12;i++){
     const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(0.55+i*0.08, 0.005, 6, 80),
-      new THREE.MeshStandardMaterial({ color:0x2a1a3e, roughness:0.5 })
+      new THREE.TorusGeometry(.55+i*.08,.005,6,80),
+      new THREE.MeshStandardMaterial({color:0x2a1a3e,roughness:.5})
     );
     ring.rotation.x = Math.PI/2;
     record.add(ring);
   }
   const tex = new THREE.TextureLoader().load('logo.png',undefined,undefined,()=>{});
-  record.add(new THREE.Mesh(
-    new THREE.CylinderGeometry(0.42,0.42,0.08,40),
-    new THREE.MeshStandardMaterial({ map:tex, color:0x5c1049, roughness:0.6, metalness:0.2 })
-  ));
-  record.add(new THREE.Mesh(
-    new THREE.CylinderGeometry(0.06,0.06,0.12,20),
-    new THREE.MeshStandardMaterial({ color:0x000000 })
-  ));
+  record.add(new THREE.Mesh(new THREE.CylinderGeometry(.42,.42,.08,40), new THREE.MeshStandardMaterial({map:tex,color:0x5c1049,roughness:.6,metalness:.2})));
+  record.add(new THREE.Mesh(new THREE.CylinderGeometry(.06,.06,.12,20), new THREE.MeshStandardMaterial({color:0x000000})));
   scene.add(record);
-  scene.add(Object.assign(new THREE.AmbientLight(0xffffff),{intensity:0.4}));
+  scene.add(Object.assign(new THREE.AmbientLight(0xffffff),{intensity:.4}));
   const dir = new THREE.DirectionalLight(0xed24c8,2.2); dir.position.set(3,5,4); scene.add(dir);
   const rim = new THREE.DirectionalLight(0x6b1059,1.0); rim.position.set(-4,-2,-3); scene.add(rim);
-
-  const bounds={x:2.8,y:1.6},pos={x:0,y:0},vel={x:0.012,y:0.009},tilt={x:0.4,y:-0.3};
+  const bounds={x:2.8,y:1.6},pos={x:0,y:0},vel={x:.012,y:.009},tilt={x:.4,y:-.3};
   (function animate(){
     requestAnimationFrame(animate);
-    record.rotation.y += 0.018;
-    pos.x+=vel.x; pos.y+=vel.y;
+    record.rotation.y+=.018; pos.x+=vel.x; pos.y+=vel.y;
     if(Math.abs(pos.x)>bounds.x){vel.x*=-1;tilt.y*=-1;}
     if(Math.abs(pos.y)>bounds.y){vel.y*=-1;tilt.x*=-1;}
     record.position.set(pos.x,pos.y,0);
-    record.rotation.x+=(tilt.x-record.rotation.x)*0.02;
-    record.rotation.z+=(tilt.y*0.3-record.rotation.z)*0.02;
+    record.rotation.x+=(tilt.x-record.rotation.x)*.02;
+    record.rotation.z+=(tilt.y*.3-record.rotation.z)*.02;
     renderer.render(scene,camera);
   })();
   window.addEventListener('resize',()=>{
@@ -880,17 +605,16 @@ intro.addEventListener('animationend', e => {
   });
 })();
 
-// ── NAV ───────────────────────────────────────────────────────────────
+// NAV
 const nav = document.getElementById('nav');
 const navLinks = document.getElementById('navLinks');
 window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',window.scrollY>50));
 
-// ── THEME SWITCH ─────────────────────────────────────────────────────
+// THEME SWITCH
 const themeBtns = document.querySelectorAll('.theme-btn');
 const savedTheme = localStorage.getItem('youlity-theme') || 'dark';
 document.documentElement.dataset.theme = savedTheme;
 themeBtns.forEach(b => b.classList.toggle('active', b.dataset.t === savedTheme));
-
 themeBtns.forEach(btn => {
   btn.addEventListener('click', () => {
     const t = btn.dataset.t;
@@ -903,13 +627,13 @@ themeBtns.forEach(btn => {
 document.getElementById('navToggle').addEventListener('click',()=>navLinks.classList.toggle('open'));
 navLinks.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>navLinks.classList.remove('open')));
 
-// ── SCROLL REVEAL ────────────────────────────────────────────────────
+// SCROLL REVEAL
 const obs = new IntersectionObserver(entries=>{
   entries.forEach(e=>{ if(e.isIntersecting){e.target.classList.add('on');obs.unobserve(e.target);} });
-},{threshold:0.08});
+},{threshold:.08});
 document.querySelectorAll('.rv').forEach(el=>obs.observe(el));
 
-// ── KONZERT SORT ─────────────────────────────────────────────────────
+// KONZERT SORT
 document.querySelectorAll('.s-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
     document.querySelectorAll('.s-btn').forEach(b=>b.classList.remove('a'));
@@ -926,7 +650,7 @@ document.querySelectorAll('.s-btn').forEach(btn=>{
   });
 });
 
-// ── REPERTOIRE TABS ──────────────────────────────────────────────────
+// REPERTOIRE
 document.querySelectorAll('.rep-cat').forEach(cat=>{
   cat.addEventListener('click',()=>{
     document.querySelectorAll('.rep-cat').forEach(c=>c.classList.remove('a'));
@@ -936,32 +660,7 @@ document.querySelectorAll('.rep-cat').forEach(cat=>{
   });
 });
 
-// ── GATEFOLD / RELEASES ──────────────────────────────────────────────
-// Content
-const bigbandTracks = [
-  'North Africa – Chick Corea, Arr. Mike Tomaro',
-  "Chips n'Salsa – Gerald Albright, Arr. Harry Kim",
-  'Not to be Forgotten – Pat Metheny, Arr. Bob Curnow',
-  'You & Me – Disclosure, Arr. Mark Rock Borissov',
-  'Feels so Good – Chuck Mangione, Arr. Victor López',
-  'Shofukan – Michael League, Arr. Mackinley Hill'
-];
-const comboTracks = [
-  'Hold the Line – Toto, Arr. Youlity Combo',
-  'I will Survive – Gloria Gaynor, Arr. Youlity Combo',
-  'Bonustrack: Smalltown Boy – Bronski Beat'
-];
-
-function makeTL(label, title, tracks) {
-  return `<div class="gf-tl">
-    <h4>${label}</h4>
-    <div class="gf-release-title">${title}</div>
-    ${tracks.map((t,i)=>`<div class="gf-track">${String(i+1).padStart(2,'0')}  ${t}</div>`).join('')}
-    <div class="gf-date">Erscheint bald ✦</div>
-  </div>`;
-}
-
-// ── content ──────────────────────────────────────────────────────────
+// GATEFOLD
 document.getElementById('tl2').innerHTML = `
   <div class="tl-label">Bigband Album</div>
   <div class="tl-title">Youlity Bigband</div>
@@ -981,46 +680,33 @@ document.getElementById('tl4').innerHTML = `
   <div class="tl-track">Bonustrack: Smalltown Boy</div>
   <div class="tl-date">Erscheint bald ✦</div>`;
 
-// ── scroll logic ──────────────────────────────────────────────────────
-const scene  = document.getElementById('releases');
-const card12 = document.getElementById('card12');
-const card34 = document.getElementById('card34');
-const vinyl  = document.getElementById('vinyl');
-const hint   = document.getElementById('hint');
+const releases = document.getElementById('releases');
+const card12   = document.getElementById('card12');
+const card34   = document.getElementById('card34');
+const vinyl    = document.getElementById('vinyl');
+const hint     = document.getElementById('hint');
 
-// smooth easing
-function ss(e0, e1, x) {
-  const t = Math.max(0, Math.min(1, (x - e0) / (e1 - e0)));
-  return t * t * (3 - 2 * t);
-}
+function ss(e0,e1,x){ const t=Math.max(0,Math.min(1,(x-e0)/(e1-e0))); return t*t*(3-2*t); }
 
-window.addEventListener('scroll', () => {
-  const scrolled  = -scene.getBoundingClientRect().top;
-  const maxScroll = scene.offsetHeight - window.innerHeight;
+window.addEventListener('scroll',()=>{
+  const scrolled  = -releases.getBoundingClientRect().top;
+  const maxScroll = releases.offsetHeight - window.innerHeight;
   const p = Math.max(0, Math.min(1, scrolled / maxScroll));
 
-  // Phase A (p 0 → 0.45): card 1/2 opens to the left
-  const pA = ss(0, 0.45, p);
-  card12.style.transform = `rotateY(${-pA * 180}deg)`;
-  // once past 90°, drop behind card34 so panel 4 can show on top
-  card12.style.zIndex = pA > 0.5 ? '1' : '3';
+  const pA = ss(0, .45, p);
+  card12.style.transform = `rotateY(${-pA*180}deg)`;
+  card12.style.zIndex = pA > .5 ? '1' : '3';
+  vinyl.style.opacity = p > .42 ? '1' : '0';
 
-  // vinyl spins once cover is mostly open
-  vinyl.style.opacity = p > 0.42 ? '1' : '0';
+  const pB = ss(.55, 1.0, p);
+  card34.style.transform = `rotateY(${-pB*180}deg)`;
 
-  // Phase B (p 0.55 → 1.0): card 3/4 opens to the left
-  const pB = ss(0.55, 1.0, p);
-  card34.style.transform = `rotateY(${-pB * 180}deg)`;
-
-  // hint text
-  if      (p < 0.05) hint.textContent = '↓ Scroll to open';
-  else if (p < 0.48) hint.textContent = 'Bigband Album';
-  else if (p < 0.58) hint.textContent = '↓';
-  else if (p < 0.97) hint.textContent = 'Combo Single';
-  else               hint.textContent = '';
-
-}, { passive: true });
-
+  if      (p < .05) hint.textContent = '↓ Scroll to open';
+  else if (p < .48) hint.textContent = 'Bigband Album';
+  else if (p < .58) hint.textContent = '↓';
+  else if (p < .97) hint.textContent = 'Combo Single';
+  else              hint.textContent = '';
+},{ passive:true });
 </script>
 </body>
 </html>
