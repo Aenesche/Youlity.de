@@ -1,2 +1,614 @@
-<p>Hier später der bonustrack als Download</p>
-<p>UwU</p>
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Bonustrack – Youlity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ---------- Themes ---------- */
+  :root, [data-theme="dark"] {
+    --bg: #0d0b12;
+    --bg-soft: #14111d;
+    --surface: #181425;
+    --line: #2b2440;
+    --text: #efeaf6;
+    --muted: #8d85a3;
+    --accent: #9b6dff;
+    --accent-soft: rgba(155, 109, 255, 0.14);
+    --vinyl: #17141f;
+    --vinyl-groove: rgba(255,255,255,0.05);
+    --label: #6d46c9;
+    --shadow: 0 30px 80px rgba(0,0,0,0.55);
+  }
+  [data-theme="light"] {
+    --bg: #f7f6fa;
+    --bg-soft: #efedf5;
+    --surface: #ffffff;
+    --line: #ddd8ea;
+    --text: #1b1426;
+    --muted: #6f6885;
+    --accent: #6d3fd4;
+    --accent-soft: rgba(109, 63, 212, 0.10);
+    --vinyl: #221d2e;
+    --vinyl-groove: rgba(255,255,255,0.06);
+    --label: #6d3fd4;
+    --shadow: 0 24px 60px rgba(40, 25, 80, 0.18);
+  }
+  [data-theme="warm"] {
+    --bg: #f5efe4;
+    --bg-soft: #ede5d6;
+    --surface: #fdf9f1;
+    --line: #ded2bc;
+    --text: #271d12;
+    --muted: #8a7a63;
+    --accent: #b4552e;
+    --accent-soft: rgba(180, 85, 46, 0.10);
+    --vinyl: #2b2118;
+    --vinyl-groove: rgba(255,255,255,0.06);
+    --label: #b4552e;
+    --shadow: 0 24px 60px rgba(80, 50, 20, 0.18);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    transition: background 0.5s ease, color 0.5s ease;
+    overflow-x: hidden;
+  }
+
+  /* ---------- Header ---------- */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.4rem clamp(1.2rem, 4vw, 3rem);
+  }
+  .wordmark {
+    font-family: "Unbounded", sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.35em;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .wordmark span { color: var(--accent); }
+
+  .themes { display: flex; gap: 0.5rem; }
+  .themes button {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .themes button:hover { color: var(--text); border-color: var(--accent); }
+  .themes button[aria-pressed="true"] {
+    color: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+
+  /* ---------- Main ---------- */
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: clamp(0.5rem, 3vh, 2rem) 1.2rem 3rem;
+    width: 100%;
+  }
+
+  .eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.8rem;
+    opacity: 0;
+    animation: rise 0.7s ease 0.1s forwards;
+  }
+  h1 {
+    font-family: "Unbounded", sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.6rem, 6vw, 2.8rem);
+    letter-spacing: 0.12em;
+    text-align: center;
+    opacity: 0;
+    animation: rise 0.7s ease 0.25s forwards;
+  }
+  .sub {
+    color: var(--muted);
+    margin-top: 0.7rem;
+    text-align: center;
+    max-width: 28rem;
+    line-height: 1.5;
+    opacity: 0;
+    animation: rise 0.7s ease 0.4s forwards;
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ---------- Vinyl ---------- */
+  .deck {
+    position: relative;
+    width: clamp(230px, 56vw, 340px);
+    margin: clamp(1.5rem, 4vh, 3rem) 0;
+    opacity: 0;
+    animation: rise 0.9s ease 0.55s forwards;
+  }
+  .record-wrap {
+    filter: drop-shadow(0 24px 50px rgba(0,0,0,0.35));
+    transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .deck.unlocked .record-wrap { transform: scale(1.04); }
+
+  #record {
+    width: 100%;
+    display: block;
+    animation: spin 2.4s linear infinite;
+    animation-play-state: paused;
+  }
+  .deck.playing #record { animation-play-state: running; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* tonearm */
+  #tonearm {
+    position: absolute;
+    top: -4%;
+    right: -7%;
+    width: 34%;
+    transform-origin: 78% 12%;
+    transform: rotate(-28deg);
+    transition: transform 0.9s cubic-bezier(0.3, 0.7, 0.3, 1);
+    pointer-events: none;
+  }
+  .deck.unlocked #tonearm { transform: rotate(8deg); }
+
+  /* ---------- Card ---------- */
+  .card {
+    width: min(100%, 26rem);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 1.6rem;
+    box-shadow: var(--shadow);
+    transition: background 0.5s ease, border-color 0.5s ease;
+    opacity: 0;
+    animation: rise 0.8s ease 0.7s forwards;
+  }
+  .card.shake { animation: shake 0.45s ease; }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-9px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-5px); }
+    80% { transform: translateX(3px); }
+  }
+
+  label {
+    display: block;
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+  input[type="text"], input[type="email"] {
+    width: 100%;
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 0.85rem 1rem;
+    outline: none;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+  input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  #code {
+    font-size: 1.25rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    text-align: center;
+    font-weight: 600;
+  }
+  #code::placeholder { letter-spacing: 0.2em; color: var(--muted); opacity: 0.5; }
+
+  details {
+    margin-top: 1rem;
+    border-top: 1px solid var(--line);
+    padding-top: 0.9rem;
+  }
+  summary {
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 0.88rem;
+    list-style: none;
+    user-select: none;
+  }
+  summary::before { content: "+ "; color: var(--accent); }
+  details[open] summary::before { content: "– "; }
+  details .inner { margin-top: 0.9rem; display: grid; gap: 0.8rem; }
+
+  .consent {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    font-size: 0.86rem;
+    color: var(--muted);
+    line-height: 1.45;
+    cursor: pointer;
+  }
+  .consent input { margin-top: 0.2rem; accent-color: var(--accent); }
+
+  button.primary {
+    width: 100%;
+    margin-top: 1.1rem;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 0.95rem;
+    cursor: pointer;
+    transition: transform 0.15s ease, filter 0.2s ease;
+  }
+  button.primary:hover { filter: brightness(1.12); }
+  button.primary:active { transform: scale(0.98); }
+  button.primary:disabled { opacity: 0.6; cursor: wait; }
+
+  .msg {
+    margin-top: 0.8rem;
+    font-size: 0.87rem;
+    text-align: center;
+    min-height: 1.2em;
+    color: var(--muted);
+  }
+  .msg.error { color: #e5484d; }
+
+  /* ---------- Player ---------- */
+  .player { display: none; }
+  .card.is-player .player { display: block; }
+  .card.is-player form { display: none; }
+
+  .track-title {
+    font-family: "Unbounded", sans-serif;
+    font-weight: 500;
+    font-size: 1.05rem;
+    letter-spacing: 0.08em;
+    text-align: center;
+  }
+  .track-sub {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.82rem;
+    margin-top: 0.3rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.3rem;
+  }
+  #playBtn {
+    flex: none;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: transform 0.15s ease, filter 0.2s ease;
+  }
+  #playBtn:hover { filter: brightness(1.12); transform: scale(1.05); }
+  #playBtn svg { width: 20px; height: 20px; fill: currentColor; }
+
+  .progress-area { flex: 1; }
+  #seek {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 5px;
+    border-radius: 3px;
+    background: linear-gradient(to right, var(--accent) var(--p, 0%), var(--line) var(--p, 0%));
+    outline: none;
+    cursor: pointer;
+  }
+  #seek::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--surface);
+    transition: transform 0.15s ease;
+  }
+  #seek::-webkit-slider-thumb:hover { transform: scale(1.25); }
+  #seek::-moz-range-thumb {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--surface);
+  }
+  .times {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.74rem;
+    color: var(--muted);
+    margin-top: 0.4rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.78rem;
+    padding: 1.5rem;
+  }
+  footer a { color: var(--muted); }
+
+  /* focus visibility */
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  summary:focus-visible { outline-offset: 4px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, #record { animation-duration: 0.001s !important; animation-delay: 0s !important; transition-duration: 0.001s !important; }
+    .deck.playing #record { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="wordmark" href="/">YOULITY<span>.</span></a>
+  <div class="themes" role="group" aria-label="Farbmodus">
+    <button data-theme-btn="dark" aria-pressed="true" title="Dunkel">●</button>
+    <button data-theme-btn="light" aria-pressed="false" title="Hell">○</button>
+    <button data-theme-btn="warm" aria-pressed="false" title="Warm">◑</button>
+  </div>
+</header>
+
+<main>
+  <p class="eyebrow">Versteckt in deiner Platte</p>
+  <h1>BONUSTRACK</h1>
+  <p class="sub">Du hast einen Code in deinem Plattencover gefunden? Dann gehört dieser Track jetzt dir.</p>
+
+  <div class="deck" id="deck">
+    <div class="record-wrap">
+      <svg id="record" viewBox="0 0 200 200" aria-hidden="true">
+        <circle cx="100" cy="100" r="98" fill="var(--vinyl)"/>
+        <g fill="none" stroke="var(--vinyl-groove)" stroke-width="1">
+          <circle cx="100" cy="100" r="90"/><circle cx="100" cy="100" r="83"/>
+          <circle cx="100" cy="100" r="76"/><circle cx="100" cy="100" r="69"/>
+          <circle cx="100" cy="100" r="62"/><circle cx="100" cy="100" r="55"/>
+          <circle cx="100" cy="100" r="48"/>
+        </g>
+        <path d="M 100 6 A 94 94 0 0 1 194 100" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="10" stroke-linecap="round" opacity="0.35"/>
+        <circle cx="100" cy="100" r="34" fill="var(--label)"/>
+        <circle cx="100" cy="100" r="34" fill="none" stroke="rgba(0,0,0,0.18)" stroke-width="1"/>
+        <text x="100" y="95" text-anchor="middle" font-family="Unbounded, sans-serif" font-size="9" letter-spacing="2" fill="rgba(255,255,255,0.92)" font-weight="700">YOULITY</text>
+        <text x="100" y="110" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="6" letter-spacing="3" fill="rgba(255,255,255,0.65)">BONUSTRACK</text>
+        <circle cx="100" cy="100" r="3.5" fill="var(--bg)"/>
+      </svg>
+    </div>
+    <svg id="tonearm" viewBox="0 0 100 100" aria-hidden="true">
+      <circle cx="78" cy="12" r="9" fill="var(--surface)" stroke="var(--line)" stroke-width="2"/>
+      <line x1="78" y1="12" x2="30" y2="78" stroke="var(--muted)" stroke-width="3.5" stroke-linecap="round"/>
+      <rect x="22" y="74" width="16" height="9" rx="3" transform="rotate(-54 30 78)" fill="var(--accent)"/>
+    </svg>
+  </div>
+
+  <div class="card" id="card">
+    <form id="form" novalidate>
+      <label for="code">Dein Code</label>
+      <input type="text" id="code" inputmode="text" autocomplete="off" spellcheck="false"
+             placeholder="XXXX-XXXX" maxlength="12" required>
+
+      <details>
+        <summary>E-Mail hinterlassen (optional)</summary>
+        <div class="inner">
+          <input type="email" id="email" placeholder="du@beispiel.de" autocomplete="email">
+          <label class="consent">
+            <input type="checkbox" id="newsletter">
+            <span>Sagt mir Bescheid, wenn ihr wieder ein Konzert gebt. (Selten, versprochen – Abmeldung jederzeit per Mail an youlitybigband@gmail.com)</span>
+          </label>
+        </div>
+      </details>
+
+      <button type="submit" class="primary" id="submitBtn">Freischalten</button>
+      <p class="msg" id="msg"></p>
+    </form>
+
+    <div class="player">
+      <p class="track-title" id="trackTitle">Bonustrack</p>
+      <p class="track-sub">Youlity · Exklusiv für dich</p>
+      <div class="controls">
+        <button id="playBtn" aria-label="Abspielen">
+          <svg id="iconPlay" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          <svg id="iconPause" viewBox="0 0 24 24" style="display:none"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+        </button>
+        <div class="progress-area">
+          <input type="range" id="seek" min="0" max="100" value="0" step="0.1" aria-label="Position">
+          <div class="times"><span id="tCur">0:00</span><span id="tDur">–:––</span></div>
+        </div>
+      </div>
+      <p class="msg" id="playerMsg"></p>
+    </div>
+  </div>
+
+  <audio id="audio" preload="metadata"></audio>
+</main>
+
+<footer>
+  <a href="/">← youlity.de</a>
+</footer>
+
+<script>
+  // ===== Konfiguration =====
+  const FUNCTION_URL = "https://hmopcvtzhcevouwmdwxa.supabase.co/functions/v1/bonustrack";
+  const TRACK_TITLE = "Bonustrack"; // hier den echten Tracknamen eintragen
+
+  // ===== Theme =====
+  const themeBtns = document.querySelectorAll("[data-theme-btn]");
+  function setTheme(t) {
+    document.documentElement.dataset.theme = t;
+    localStorage.setItem("yl-theme", t);
+    themeBtns.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.themeBtn === t)));
+  }
+  themeBtns.forEach(b => b.addEventListener("click", () => setTheme(b.dataset.themeBtn)));
+  setTheme(localStorage.getItem("yl-theme") || "dark");
+
+  // ===== Elemente =====
+  const form = document.getElementById("form");
+  const codeInput = document.getElementById("code");
+  const emailInput = document.getElementById("email");
+  const newsletterInput = document.getElementById("newsletter");
+  const submitBtn = document.getElementById("submitBtn");
+  const msg = document.getElementById("msg");
+  const card = document.getElementById("card");
+  const deck = document.getElementById("deck");
+  const audio = document.getElementById("audio");
+  const playBtn = document.getElementById("playBtn");
+  const iconPlay = document.getElementById("iconPlay");
+  const iconPause = document.getElementById("iconPause");
+  const seek = document.getElementById("seek");
+  const tCur = document.getElementById("tCur");
+  const tDur = document.getElementById("tDur");
+  const playerMsg = document.getElementById("playerMsg");
+  const tonearm = document.getElementById("tonearm");
+  document.getElementById("trackTitle").textContent = TRACK_TITLE;
+
+  // Code-Eingabe automatisch formatieren: ABCD-EFGH
+  codeInput.addEventListener("input", () => {
+    let v = codeInput.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
+    if (v.length > 4) v = v.slice(0, 4) + "-" + v.slice(4);
+    codeInput.value = v;
+  });
+
+  // ===== Code einlösen =====
+  async function redeem(code, email, newsletter) {
+    const res = await fetch(FUNCTION_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code, email: email || null, newsletter: !!newsletter })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "Etwas ist schiefgelaufen. Versuch es nochmal.");
+    return data;
+  }
+
+  function unlock(url) {
+    audio.src = url;
+    card.classList.add("is-player");
+    deck.classList.add("unlocked");
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const raw = codeInput.value.replace(/[^A-Za-z0-9]/g, "");
+    if (raw.length < 6) {
+      msg.textContent = "Bitte gib deinen vollständigen Code ein.";
+      msg.classList.add("error");
+      card.classList.remove("shake"); void card.offsetWidth; card.classList.add("shake");
+      return;
+    }
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Prüfe …";
+    msg.textContent = ""; msg.classList.remove("error");
+    try {
+      const data = await redeem(raw, emailInput.value.trim(), newsletterInput.checked);
+      localStorage.setItem("yl-code", raw);
+      unlock(data.url);
+    } catch (err) {
+      msg.textContent = err.message;
+      msg.classList.add("error");
+      card.classList.remove("shake"); void card.offsetWidth; card.classList.add("shake");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Freischalten";
+    }
+  });
+
+  // Wenn schon mal freigeschaltet: still erneut einlösen (ohne E-Mail neu zu senden)
+  const savedCode = localStorage.getItem("yl-code");
+  if (savedCode) {
+    redeem(savedCode, null, false)
+      .then(d => unlock(d.url))
+      .catch(() => localStorage.removeItem("yl-code"));
+  }
+
+  // ===== Player =====
+  function fmt(s) {
+    if (!isFinite(s)) return "–:––";
+    const m = Math.floor(s / 60), r = Math.floor(s % 60);
+    return m + ":" + String(r).padStart(2, "0");
+  }
+  playBtn.addEventListener("click", () => audio.paused ? audio.play() : audio.pause());
+  audio.addEventListener("play", () => {
+    deck.classList.add("playing");
+    iconPlay.style.display = "none"; iconPause.style.display = "";
+    playBtn.setAttribute("aria-label", "Pause");
+  });
+  audio.addEventListener("pause", () => {
+    deck.classList.remove("playing");
+    iconPlay.style.display = ""; iconPause.style.display = "none";
+    playBtn.setAttribute("aria-label", "Abspielen");
+  });
+  audio.addEventListener("loadedmetadata", () => { tDur.textContent = fmt(audio.duration); });
+  audio.addEventListener("timeupdate", () => {
+    const p = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
+    if (!seeking) { seek.value = p; seek.style.setProperty("--p", p + "%"); }
+    tCur.textContent = fmt(audio.currentTime);
+    // Tonarm wandert mit dem Fortschritt nach innen (8° → 26°)
+    if (deck.classList.contains("unlocked")) {
+      tonearm.style.transform = "rotate(" + (8 + p * 0.18) + "deg)";
+    }
+  });
+  audio.addEventListener("error", () => {
+    if (!audio.src) return;
+    playerMsg.textContent = "Der Link ist abgelaufen – lade die Seite neu.";
+    playerMsg.classList.add("error");
+  });
+  let seeking = false;
+  seek.addEventListener("input", () => {
+    seeking = true;
+    seek.style.setProperty("--p", seek.value + "%");
+    tCur.textContent = fmt((seek.value / 100) * (audio.duration || 0));
+  });
+  seek.addEventListener("change", () => {
+    if (audio.duration) audio.currentTime = (seek.value / 100) * audio.duration;
+    seeking = false;
+  });
+</script>
+</body>
+</html>
