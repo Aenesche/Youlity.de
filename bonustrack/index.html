@@ -482,6 +482,7 @@
 
 <footer>
   <a href="/">← youlity.de</a>
+  <span style="opacity:0.4; margin-left:0.6rem;">build 4</span>
 </footer>
 
 <script>
@@ -545,12 +546,18 @@
 
   function unlock(url) {
     if (!url) {                       // Sicherheitsnetz: ohne gültige URL nichts ausblenden
+      showForm();
       showError("Etwas ist schiefgelaufen. Versuch es nochmal.");
       return;
     }
     audio.src = url;
     card.classList.add("is-player");
     deck.classList.add("unlocked");
+  }
+
+  function showForm() {               // zurück zur Code-Eingabe (Karte nie "leer" lassen)
+    card.classList.remove("is-player");
+    deck.classList.remove("unlocked", "playing");
   }
 
   function showError(text) {
@@ -642,8 +649,8 @@
   });
   audio.addEventListener("error", () => {
     if (!audio.src) return;
-    playerMsg.textContent = "Der Link ist abgelaufen – lade die Seite neu.";
-    playerMsg.classList.add("error");
+    showForm();
+    showError("Der Track lässt sich gerade nicht laden. Lade die Seite neu oder versuch es später nochmal.");
   });
   let seeking = false;
   seek.addEventListener("input", () => {
