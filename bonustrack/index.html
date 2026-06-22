@@ -570,7 +570,7 @@
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const raw = codeInput.value.replace(/[^A-Za-z0-9]/g, "");
-    if (raw.length < 6) {
+    if (raw.length < 7) {
       showError("Bitte gib deinen vollständigen Code ein.");
       return;
     }
