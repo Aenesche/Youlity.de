@@ -180,7 +180,7 @@
     transition: transform 0.9s cubic-bezier(0.3, 0.7, 0.3, 1);
     pointer-events: none;
   }
-  .deck.unlocked #tonearm { transform: rotate(8deg); }
+  /* Arm-Position wird per JS gesetzt: -28° = abgehoben, ab 8° = auf der Platte */
 
   /* ---------- Card ---------- */
   .card {
@@ -256,10 +256,13 @@
     display: flex;
     gap: 0.6rem;
     align-items: flex-start;
-    font-size: 0.86rem;
+    font-size: 0.82rem;
     color: var(--muted);
-    line-height: 1.45;
+    line-height: 1.5;
     cursor: pointer;
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: 400;
   }
   .consent input { margin-top: 0.2rem; accent-color: var(--accent); }
 
@@ -434,7 +437,7 @@
       <input type="text" id="code" inputmode="text" autocomplete="off" spellcheck="false"
              placeholder="XXXX-XXXX" maxlength="12" required>
 
-      <details>
+      <details open>
         <summary>E-Mail hinterlassen (optional)</summary>
         <div class="inner">
           <input type="email" id="email" placeholder="du@beispiel.de" autocomplete="email">
@@ -450,7 +453,7 @@
     </form>
 
     <div class="player">
-      <p class="track-title" id="trackTitle">SMALLTOWN BOY</p>
+      <p class="track-title" id="trackTitle">Bonustrack</p>
       <p class="track-sub">Youlity · Exklusiv für dich</p>
       <div class="controls">
         <button id="playBtn" aria-label="Abspielen">
@@ -476,7 +479,7 @@
 <script>
   // ===== Konfiguration =====
   const FUNCTION_URL = "https://hmopcvtzhcevouwmdwxa.supabase.co/functions/v1/bonustrack";
-  const TRACK_TITLE = "Bonustrack"; // hier den echten Tracknamen eintragen
+  const TRACK_TITLE = "Smalltown Boy"; // hier den echten Tracknamen eintragen
 
   // ===== Theme =====
   const themeBtns = document.querySelectorAll("[data-theme-btn]");
@@ -517,13 +520,18 @@
 
   // ===== Code einlösen =====
   async function redeem(code, email, newsletter) {
-    const res = await fetch(FUNCTION_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code, email: email || null, newsletter: !!newsletter })
-    });
+    let res;
+    try {
+      res = await fetch(FUNCTION_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, email: email || null, newsletter: !!newsletter })
+      });
+    } catch {
+      throw new Error("Keine Verbindung. Bist du online?");
+    }
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || "Etwas ist schiefgelaufen. Versuch es nochmal.");
+    if (!data.ok) throw new Error(data.error || "Etwas ist schiefgelaufen. Versuch es nochmal.");
     return data;
   }
 
@@ -573,7 +581,32 @@
     const m = Math.floor(s / 60), r = Math.floor(s % 60);
     return m + ":" + String(r).padStart(2, "0");
   }
-  playBtn.addEventListener("click", () => audio.paused ? audio.play() : audio.pause());
+  // ---- Tonarm ----
+  const ARM_OFF = -28;                          // abgehoben (Ruheposition)
+  const ARM_DROP_MS = 950;                       // muss zur CSS-Transition passen (0.9s)
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const armAngle = (p) => 8 + p * 0.18;          // 8° aussen → ~26° innen
+  const progressPct = () => audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
+  function setArm(deg) { tonearm.style.transform = "rotate(" + deg + "deg)"; }
+  setArm(ARM_OFF);                               // direkt nach dem Freischalten: abgehoben
+
+  let dropTimer = null;
+  playBtn.addEventListener("click", () => {
+    clearTimeout(dropTimer);
+    if (audio.paused) {
+      // Arm auf die Platte setzen, dann nach der Animation abspielen
+      setArm(armAngle(progressPct()));
+      playBtn.disabled = true;
+      const wait = reduceMotion ? 0 : ARM_DROP_MS;
+      dropTimer = setTimeout(() => {
+        playBtn.disabled = false;
+        audio.play().catch(() => { setArm(ARM_OFF); });
+      }, wait);
+    } else {
+      audio.pause();                             // pause-Event hebt den Arm ab
+    }
+  });
+
   audio.addEventListener("play", () => {
     deck.classList.add("playing");
     iconPlay.style.display = "none"; iconPause.style.display = "";
@@ -583,16 +616,15 @@
     deck.classList.remove("playing");
     iconPlay.style.display = ""; iconPause.style.display = "none";
     playBtn.setAttribute("aria-label", "Abspielen");
+    setArm(ARM_OFF);                             // Arm hebt von der Platte ab
   });
+  audio.addEventListener("ended", () => setArm(ARM_OFF));
   audio.addEventListener("loadedmetadata", () => { tDur.textContent = fmt(audio.duration); });
   audio.addEventListener("timeupdate", () => {
-    const p = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
+    const p = progressPct();
     if (!seeking) { seek.value = p; seek.style.setProperty("--p", p + "%"); }
     tCur.textContent = fmt(audio.currentTime);
-    // Tonarm wandert mit dem Fortschritt nach innen (8° → 26°)
-    if (deck.classList.contains("unlocked")) {
-      tonearm.style.transform = "rotate(" + (8 + p * 0.18) + "deg)";
-    }
+    if (!audio.paused) setArm(armAngle(p));      // Arm wandert nur beim Abspielen mit
   });
   audio.addEventListener("error", () => {
     if (!audio.src) return;
