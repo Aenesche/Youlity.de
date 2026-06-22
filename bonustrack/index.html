@@ -191,9 +191,10 @@
     padding: 1.6rem;
     box-shadow: var(--shadow);
     transition: background 0.5s ease, border-color 0.5s ease;
-    opacity: 0;
-    animation: rise 0.8s ease 0.7s forwards;
+    opacity: 1;                       /* immer sichtbar – Einblendung läuft über backwards-Fill */
+    animation: rise 0.8s ease 0.7s backwards;
   }
+  /* shake animiert nur die Position; opacity bleibt beim Grundwert 1 (Karte verschwindet nie) */
   .card.shake { animation: shake 0.45s ease; }
   @keyframes shake {
     0%, 100% { transform: translateX(0); }
@@ -482,7 +483,7 @@
 
 <footer>
   <a href="/">← youlity.de</a>
-  <span style="opacity:0.4; margin-left:0.6rem;">build 4</span>
+  <span style="opacity:0.4; margin-left:0.6rem;">V5.0</span>
 </footer>
 
 <script>
