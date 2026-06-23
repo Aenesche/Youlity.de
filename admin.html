@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Youlity Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#07050f; --surface:#0e0b1a; --surface2:#16102a;
+      --pink:#ed24c8; --pink-dim:#5c1049; --pink-glow:rgba(237,36,200,0.1);
+      --text:#f0eaf8; --muted:#6b607a; --border:rgba(237,36,200,0.2);
+      --green:#2ecc71; --red:#e74c3c; --yellow:#f1c40f;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+
+    /* ── LOGIN ── */
+    #loginScreen{
+      position:fixed;inset:0;background:var(--bg);z-index:999;
+      display:flex;align-items:center;justify-content:center;
+    }
+    .login-box{
+      width:min(380px,90vw);
+      border:1px solid var(--border);background:var(--surface);padding:2.5rem;
+    }
+    .login-box h1{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.1em;margin-bottom:.3rem;}
+    .login-box p{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-bottom:2rem;}
+    .login-box input{
+      width:100%;background:#050510;color:var(--text);border:1px solid var(--border);
+      padding:.75rem 1rem;font-family:'Space Mono',monospace;font-size:.75rem;
+      margin-bottom:.75rem;outline:none;transition:border-color .2s;
+    }
+    .login-box input:focus{border-color:var(--pink);}
+    #loginErr{font-family:'Space Mono',monospace;font-size:.58rem;color:var(--red);margin-bottom:.75rem;display:none;}
+
+    /* ── SHARED BUTTON ── */
+    .btn{
+      font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;
+      padding:.6rem 1.2rem;border:1px solid var(--border);background:none;color:var(--muted);
+      cursor:pointer;transition:all .2s;
+    }
+    .btn:hover{border-color:var(--pink);color:var(--pink);background:var(--pink-glow);}
+    .btn.primary{border-color:var(--pink);color:var(--pink);background:var(--pink-glow);}
+    .btn.primary:hover{background:rgba(237,36,200,0.2);}
+    .btn.danger{border-color:var(--red);color:var(--red);}
+    .btn.danger:hover{background:rgba(231,76,60,0.1);}
+    .btn.success{border-color:var(--green);color:var(--green);}
+    .btn.success:hover{background:rgba(46,204,113,0.1);}
+    .btn.full{width:100%;}
+
+    /* ── LAYOUT ── */
+    #app{display:none;min-height:100vh;}
+
+    header{
+      position:sticky;top:0;z-index:50;
+      background:rgba(7,5,15,.95);backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;
+      padding:.9rem 2rem;
+    }
+    .header-left{display:flex;align-items:center;gap:1.5rem;}
+    .logo{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.12em;color:var(--text);}
+    .logo span{color:var(--pink);}
+    .user-tag{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.15em;color:var(--muted);}
+
+    /* ── TABS ── */
+    .tabs{
+      display:flex;gap:0;border-bottom:1px solid var(--border);
+      padding:0 2rem;overflow-x:auto;
+    }
+    .tab{
+      font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;
+      padding:.9rem 1.4rem;border:none;background:none;color:var(--muted);cursor:pointer;
+      border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s;
+    }
+    .tab:hover{color:var(--text);}
+    .tab.active{color:var(--pink);border-bottom-color:var(--pink);}
+
+    /* ── MAIN CONTENT ── */
+    .content{max-width:900px;margin:0 auto;padding:2.5rem 2rem;}
+
+    .section-title{
+      font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:.06em;
+      color:var(--text);margin-bottom:.4rem;
+    }
+    .section-sub{
+      font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.2em;
+      color:var(--muted);text-transform:uppercase;margin-bottom:2rem;
+    }
+
+    /* ── FORM ── */
+    .form-box{
+      border:1px solid var(--border);background:var(--surface);
+      padding:1.8rem;margin-bottom:2rem;
+    }
+    .form-box h3{
+      font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.22em;
+      color:var(--pink);text-transform:uppercase;margin-bottom:1.2rem;
+    }
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;}
+    .form-grid.three{grid-template-columns:1fr 1fr 1fr;}
+    .form-grid.one{grid-template-columns:1fr;}
+    @media(max-width:600px){.form-grid,.form-grid.three{grid-template-columns:1fr;}}
+
+    .field{display:flex;flex-direction:column;gap:.4rem;}
+    .field.span2{grid-column:span 2;}
+    .field.span3{grid-column:span 3;}
+    @media(max-width:600px){.field.span2,.field.span3{grid-column:span 1;}}
+
+    label{
+      font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.18em;
+      color:var(--muted);text-transform:uppercase;
+    }
+    input[type="text"],input[type="date"],input[type="email"],input[type="url"],
+    input[type="password"],textarea,select{
+      background:#050510;color:var(--text);border:1px solid var(--border);
+      padding:.6rem .9rem;font-family:'DM Sans',sans-serif;font-size:.9rem;
+      outline:none;transition:border-color .2s;width:100%;
+    }
+    input:focus,textarea:focus,select:focus{border-color:var(--pink);}
+    textarea{resize:vertical;min-height:90px;line-height:1.6;}
+    select option{background:var(--bg);}
+
+    .form-actions{display:flex;gap:.75rem;margin-top:1.2rem;flex-wrap:wrap;}
+
+    /* ── LIST ITEMS ── */
+    .item-list{display:flex;flex-direction:column;gap:1px;background:var(--border);}
+    .item{
+      background:var(--bg);padding:1.1rem 1.4rem;
+      display:flex;align-items:center;justify-content:space-between;gap:1rem;
+      transition:background .2s;
+    }
+    .item:hover{background:var(--surface);}
+    .item-info{flex:1;min-width:0;}
+    .item-main{font-size:.95rem;font-weight:500;color:var(--text);margin-bottom:.2rem;}
+    .item-meta{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.1em;color:var(--muted);}
+    .item-badge{
+      font-family:'Space Mono',monospace;font-size:.48rem;letter-spacing:.14em;text-transform:uppercase;
+      padding:.25rem .6rem;border:1px solid;white-space:nowrap;
+    }
+    .badge-up{border-color:var(--green);color:var(--green);}
+    .badge-past{border-color:var(--muted);color:var(--muted);}
+    .item-actions{display:flex;gap:.5rem;flex-shrink:0;}
+
+    /* ── EMPTY STATE ── */
+    .empty{
+      padding:3rem;text-align:center;border:1px dashed var(--border);
+      font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.2em;
+      color:var(--muted);text-transform:uppercase;
+    }
+
+    /* ── TOAST ── */
+    #toast{
+      position:fixed;bottom:2rem;right:2rem;z-index:9999;
+      font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.15em;
+      padding:.8rem 1.4rem;border:1px solid;
+      transform:translateY(4rem);opacity:0;transition:all .3s;pointer-events:none;
+    }
+    #toast.show{transform:translateY(0);opacity:1;}
+    #toast.ok{border-color:var(--green);color:var(--green);background:rgba(46,204,113,.08);}
+    #toast.err{border-color:var(--red);color:var(--red);background:rgba(231,76,60,.08);}
+
+    /* ── SPINNER ── */
+    .spin{
+      display:inline-block;width:14px;height:14px;
+      border:2px solid var(--border);border-top-color:var(--pink);
+      border-radius:50%;animation:rot .7s linear infinite;vertical-align:middle;
+    }
+    @keyframes rot{to{transform:rotate(360deg);}}
+
+    /* ── TEXTAREA LARGE ── */
+    .big-text{min-height:160px;}
+
+    /* ── PANEL ── */
+    .pane{display:none;}
+    .pane.active{display:block;}
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <h1>Youlity <span style="color:var(--pink)">Admin</span></h1>
+    <p>Band Management · Secure Area</p>
+    <input type="email" id="loginEmail" placeholder="E-Mail" autocomplete="email"/>
+    <input type="password" id="loginPw" placeholder="Passwort" autocomplete="current-password"/>
+    <div id="loginErr">E-Mail oder Passwort falsch.</div>
+    <button class="btn primary full" onclick="doLogin()">Einloggen</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header>
+    <div class="header-left">
+      <div class="logo">Youlity <span>Admin</span></div>
+      <div class="user-tag" id="userTag">—</div>
+    </div>
+    <div style="display:flex;gap:.75rem;align-items:center;">
+      <a href="index.html" class="btn" target="_blank">← Website</a>
+      <button class="btn danger" onclick="doLogout()">Logout</button>
+    </div>
+  </header>
+
+  <div class="tabs" id="tabBar">
+    <button class="tab active" data-tab="concerts">Konzerte</button>
+    <button class="tab" data-tab="members">Mitglieder</button>
+    <button class="tab" data-tab="history">Auftritte & Preise</button>
+    <button class="tab" data-tab="about">Über uns</button>
+    <button class="tab" data-tab="repertoire">Repertoire</button>
+  </div>
+
+  <!-- KONZERTE -->
+  <div class="content pane active" id="pane-concerts">
+    <div class="section-title">Konzerte</div>
+    <div class="section-sub">Termine hinzufügen, bearbeiten, löschen</div>
+
+    <div class="form-box">
+      <h3>Neuer Termin</h3>
+      <div class="form-grid three">
+        <div class="field">
+          <label>Datum (Sortierung)</label>
+          <input type="date" id="c-date"/>
+        </div>
+        <div class="field">
+          <label>Anzeige-Datum (z.B. "5–7")</label>
+          <input type="text" id="c-date-display" placeholder="22"/>
+        </div>
+        <div class="field">
+          <label>Monat Jahr (z.B. "Jul 2026")</label>
+          <input type="text" id="c-month-year" placeholder="Jul 2026"/>
+        </div>
+        <div class="field span2">
+          <label>Venue / Veranstaltungsort</label>
+          <input type="text" id="c-venue" placeholder="Konzerthaus Berlin"/>
+        </div>
+        <div class="field">
+          <label>Stadt</label>
+          <input type="text" id="c-city" placeholder="Berlin"/>
+        </div>
+        <div class="field">
+          <label>Ticket-URL (optional)</label>
+          <input type="url" id="c-url" placeholder="https://..."/>
+        </div>
+        <div class="field">
+          <label>Button-Text</label>
+          <input type="text" id="c-label" placeholder="Tickets"/>
+        </div>
+        <div class="field">
+          <label>Status</label>
+          <select id="c-status">
+            <option value="upcoming">Kommend</option>
+            <option value="past">Vergangen</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn primary" onclick="addConcert()">Termin hinzufügen</button>
+        <button class="btn" onclick="clearConcertForm()">Felder leeren</button>
+      </div>
+    </div>
+
+    <div id="concertList"><div class="empty">Lade Termine… <span class="spin"></span></div></div>
+  </div>
+
+  <!-- MITGLIEDER -->
+  <div class="content pane" id="pane-members">
+    <div class="section-title">Mitglieder</div>
+    <div class="section-sub">Bandmitglieder verwalten</div>
+
+    <div class="form-box">
+      <h3>Neues Mitglied</h3>
+      <div class="form-grid">
+        <div class="field">
+          <label>Name</label>
+          <input type="text" id="m-name" placeholder="Anna Knöppler"/>
+        </div>
+        <div class="field">
+          <label>Instrument / Rolle</label>
+          <input type="text" id="m-inst" placeholder="Alt-Saxophon"/>
+        </div>
+        <div class="field span2">
+          <label>Bio (optional)</label>
+          <textarea id="m-bio" placeholder="Kurze Beschreibung…"></textarea>
+        </div>
+        <div class="field">
+          <label>Reihenfolge (Zahl)</label>
+          <input type="text" id="m-order" placeholder="0"/>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn primary" onclick="addMember()">Mitglied hinzufügen</button>
+        <button class="btn" onclick="clearMemberForm()">Felder leeren</button>
+      </div>
+    </div>
+
+    <div id="memberList"><div class="empty">Lade Mitglieder… <span class="spin"></span></div></div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="content pane" id="pane-history">
+    <div class="section-title">Auftritte & Preise</div>
+    <div class="section-sub">Vergangene Highlights und Auszeichnungen</div>
+
+    <div class="form-box">
+      <h3>Neuer Eintrag</h3>
+      <div class="form-grid">
+        <div class="field">
+          <label>Jahr</label>
+          <input type="text" id="h-year" placeholder="2024"/>
+        </div>
+        <div class="field">
+          <label>Event</label>
+          <input type="text" id="h-event" placeholder="Jazztreff Berlin"/>
+        </div>
+        <div class="field">
+          <label>Ort · Stadt</label>
+          <input type="text" id="h-place" placeholder="Konzerthaus · Berlin"/>
+        </div>
+        <div class="field">
+          <label>Auszeichnung (optional)</label>
+          <input type="text" id="h-award" placeholder="1. Platz"/>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn primary" onclick="addHistory()">Eintrag hinzufügen</button>
+        <button class="btn" onclick="clearHistoryForm()">Felder leeren</button>
+      </div>
+    </div>
+
+    <div id="historyList"><div class="empty">Lade Einträge… <span class="spin"></span></div></div>
+  </div>
+
+  <!-- ÜBER UNS -->
+  <div class="content pane" id="pane-about">
+    <div class="section-title">Über uns</div>
+    <div class="section-sub">Freitext für die About-Sektion</div>
+
+    <div class="form-box">
+      <h3>Text bearbeiten</h3>
+      <div class="form-grid one">
+        <div class="field">
+          <label>Haupttext (Absatz 1)</label>
+          <textarea class="big-text" id="about-p1"></textarea>
+        </div>
+        <div class="field">
+          <label>Haupttext (Absatz 2, optional)</label>
+          <textarea class="big-text" id="about-p2"></textarea>
+        </div>
+        <div class="field">
+          <label>Mitglieder-Anzahl (Stat)</label>
+          <input type="text" id="about-count" placeholder="~15+"/>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn primary" onclick="saveAbout()">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REPERTOIRE -->
+  <div class="content pane" id="pane-repertoire">
+    <div class="section-title">Repertoire</div>
+    <div class="section-sub">Texte für die vier Kategorien</div>
+
+    <div class="form-box">
+      <h3>Texte bearbeiten</h3>
+      <div class="form-grid one">
+        <div class="field">
+          <label>Jazz</label>
+          <textarea class="big-text" id="rep-jazz"></textarea>
+        </div>
+        <div class="field">
+          <label>Funk & Soul</label>
+          <textarea class="big-text" id="rep-funk"></textarea>
+        </div>
+        <div class="field">
+          <label>Electronic</label>
+          <textarea class="big-text" id="rep-electronic"></textarea>
+        </div>
+        <div class="field">
+          <label>Eigene Stücke</label>
+          <textarea class="big-text" id="rep-original"></textarea>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn primary" onclick="saveRepertoire()">Alle speichern</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const SB_URL  = 'https://hmopcvtzhcevouwmdwxa.supabase.co';
+const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhtb3BjdnR6aGNldm91d21kd3hhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzI3MTMsImV4cCI6MjA5NDI0ODcxM30.tyZHv56vvqGfcSBaTUhkOwzZjDsBpS2x7BzLJKS0Wzc';
+
+let ACCESS_TOKEN = null;
+
+// ── SUPABASE HELPERS ─────────────────────────────────────────────────
+async function sb(path, method='GET', body=null) {
+  const headers = {
+    'Content-Type': 'application/json',
+    'apikey': SB_ANON,
+    'Authorization': `Bearer ${ACCESS_TOKEN || SB_ANON}`,
+    'Prefer': method === 'POST' ? 'return=representation' : ''
+  };
+  const res = await fetch(SB_URL + path, {
+    method, headers,
+    body: body ? JSON.stringify(body) : null
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(()=>({}));
+    throw new Error(err.message || err.error_description || res.statusText);
+  }
+  if (res.status === 204) return null;
+  return res.json();
+}
+
+async function sbAuth(email, password) {
+  const res = await fetch(`${SB_URL}/auth/v1/token?grant_type=password`, {
+    method:'POST',
+    headers:{'Content-Type':'application/json','apikey':SB_ANON},
+    body: JSON.stringify({email, password})
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error_description || data.message || 'Login fehlgeschlagen');
+  return data;
+}
+
+async function sbLogout() {
+  await fetch(`${SB_URL}/auth/v1/logout`, {
+    method:'POST',
+    headers:{'Authorization':`Bearer ${ACCESS_TOKEN}`,'apikey':SB_ANON}
+  });
+}
+
+// ── TOAST ────────────────────────────────────────────────────────────
+let toastTimer;
+function toast(msg, type='ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `show ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> t.className = '', 3000);
+}
+
+// ── LOGIN / LOGOUT ───────────────────────────────────────────────────
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pw    = document.getElementById('loginPw').value;
+  const err   = document.getElementById('loginErr');
+  err.style.display = 'none';
+  try {
+    const data = await sbAuth(email, pw);
+    ACCESS_TOKEN = data.access_token;
+    localStorage.setItem('sb_token', ACCESS_TOKEN);
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('userTag').textContent = data.user?.email || '';
+    loadAll();
+  } catch(e) {
+    err.textContent = e.message;
+    err.style.display = 'block';
+  }
+}
+
+async function doLogout() {
+  try { await sbLogout(); } catch(e) {}
+  ACCESS_TOKEN = null;
+  localStorage.removeItem('sb_token');
+  location.reload();
+}
+
+// Try auto-login from stored token
+(async function tryAutoLogin() {
+  const token = localStorage.getItem('sb_token');
+  if (!token) return;
+  try {
+    const res = await fetch(`${SB_URL}/auth/v1/user`, {
+      headers:{'Authorization':`Bearer ${token}`,'apikey':SB_ANON}
+    });
+    if (!res.ok) throw new Error();
+    const user = await res.json();
+    ACCESS_TOKEN = token;
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('userTag').textContent = user.email || '';
+    loadAll();
+  } catch(e) {
+    localStorage.removeItem('sb_token');
+  }
+})();
+
+// Enter key on login
+document.getElementById('loginPw').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+// ── TABS ─────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('pane-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ── LOAD ALL ─────────────────────────────────────────────────────────
+async function loadAll() {
+  loadConcerts();
+  loadMembers();
+  loadHistory();
+  loadContent();
+}
+
+// ── CONCERTS ─────────────────────────────────────────────────────────
+async function loadConcerts() {
+  const el = document.getElementById('concertList');
+  try {
+    const data = await sb('/rest/v1/concerts?order=date.asc&select=*');
+    if (!data || !data.length) {
+      el.innerHTML = '<div class="empty">Noch keine Termine — füge den ersten hinzu ↑</div>';
+      return;
+    }
+    el.innerHTML = '<div class="item-list">' + data.map(c => `
+      <div class="item">
+        <div class="item-info">
+          <div class="item-main">${esc(c.venue)}</div>
+          <div class="item-meta">${esc(c.date_display)} ${esc(c.month_year)} · ${esc(c.city)}${c.ticket_url ? ' · <a href="'+esc(c.ticket_url)+'" target="_blank" style="color:var(--pink)">'+esc(c.ticket_label||'Link')+'</a>' : ''}</div>
+        </div>
+        <span class="item-badge ${c.status==='upcoming'?'badge-up':'badge-past'}">${c.status==='upcoming'?'Kommend':'Vergangen'}</span>
+        <div class="item-actions">
+          <button class="btn danger" onclick="deleteConcert('${c.id}')">Löschen</button>
+        </div>
+      </div>`).join('') + '</div>';
+  } catch(e) {
+    el.innerHTML = `<div class="empty">Fehler: ${e.message}</div>`;
+  }
+}
+
+async function addConcert() {
+  const date         = document.getElementById('c-date').value;
+  const date_display = document.getElementById('c-date-display').value.trim();
+  const month_year   = document.getElementById('c-month-year').value.trim();
+  const venue        = document.getElementById('c-venue').value.trim();
+  const city         = document.getElementById('c-city').value.trim();
+  const ticket_url   = document.getElementById('c-url').value.trim();
+  const ticket_label = document.getElementById('c-label').value.trim() || 'Tickets';
+  const status       = document.getElementById('c-status').value;
+
+  if (!date || !venue || !city) { toast('Datum, Venue und Stadt sind Pflichtfelder', 'err'); return; }
+
+  try {
+    await sb('/rest/v1/concerts', 'POST', { date, date_display, month_year, venue, city, ticket_url:ticket_url||null, ticket_label, status });
+    toast('Termin gespeichert ✓');
+    clearConcertForm();
+    loadConcerts();
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+async function deleteConcert(id) {
+  if (!confirm('Termin wirklich löschen?')) return;
+  try {
+    await sb(`/rest/v1/concerts?id=eq.${id}`, 'DELETE');
+    toast('Termin gelöscht');
+    loadConcerts();
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+function clearConcertForm() {
+  ['c-date','c-date-display','c-month-year','c-venue','c-city','c-url','c-label'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('c-status').value = 'upcoming';
+}
+
+// ── MEMBERS ──────────────────────────────────────────────────────────
+async function loadMembers() {
+  const el = document.getElementById('memberList');
+  try {
+    const data = await sb('/rest/v1/members?order=sort_order.asc,created_at.asc&select=*');
+    if (!data || !data.length) {
+      el.innerHTML = '<div class="empty">Noch keine Mitglieder — füge das erste hinzu ↑</div>';
+      return;
+    }
+    el.innerHTML = '<div class="item-list">' + data.map(m => `
+      <div class="item">
+        <div class="item-info">
+          <div class="item-main">${esc(m.name)}</div>
+          <div class="item-meta">${esc(m.instrument)}${m.bio ? ' · '+esc(m.bio).slice(0,60)+'…' : ''}</div>
+        </div>
+        <div class="item-actions">
+          <button class="btn danger" onclick="deleteMember('${m.id}')">Löschen</button>
+        </div>
+      </div>`).join('') + '</div>';
+  } catch(e) {
+    el.innerHTML = `<div class="empty">Fehler: ${e.message}</div>`;
+  }
+}
+
+async function addMember() {
+  const name       = document.getElementById('m-name').value.trim();
+  const instrument = document.getElementById('m-inst').value.trim();
+  const bio        = document.getElementById('m-bio').value.trim();
+  const sort_order = parseInt(document.getElementById('m-order').value) || 0;
+  if (!name || !instrument) { toast('Name und Instrument sind Pflichtfelder', 'err'); return; }
+  try {
+    await sb('/rest/v1/members', 'POST', { name, instrument, bio:bio||null, sort_order });
+    toast('Mitglied gespeichert ✓');
+    clearMemberForm();
+    loadMembers();
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+async function deleteMember(id) {
+  if (!confirm('Mitglied wirklich löschen?')) return;
+  try {
+    await sb(`/rest/v1/members?id=eq.${id}`, 'DELETE');
+    toast('Mitglied gelöscht');
+    loadMembers();
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+function clearMemberForm() {
+  ['m-name','m-inst','m-bio','m-order'].forEach(id => document.getElementById(id).value = '');
+}
+
+// ── HISTORY ──────────────────────────────────────────────────────────
+async function loadHistory() {
+  const el = document.getElementById('historyList');
+  try {
+    const data = await sb('/rest/v1/history?order=year.desc&select=*');
+    if (!data || !data.length) {
+      el.innerHTML = '<div class="empty">Noch keine Einträge — füge den ersten hinzu ↑</div>';
+      return;
+    }
+    el.innerHTML = '<div class="item-list">' + data.map(h => `
+      <div class="item">
+        <div class="item-info">
+          <div class="item-main">${esc(h.year)} · ${esc(h.event)}</div>
+          <div class="item-meta">${esc(h.place||'')}${h.award ? ' · ★ '+esc(h.award) : ''}</div>
+        </div>
+        <div class="item-actions">
+          <button class="btn danger" onclick="deleteHistory('${h.id}')">Löschen</button>
+        </div>
+      </div>`).join('') + '</div>';
+  } catch(e) {
+    el.innerHTML = `<div class="empty">Fehler: ${e.message}</div>`;
+  }
+}
+
+async function addHistory() {
+  const year  = document.getElementById('h-year').value.trim();
+  const event = document.getElementById('h-event').value.trim();
+  const place = document.getElementById('h-place').value.trim();
+  const award = document.getElementById('h-award').value.trim();
+  if (!year || !event) { toast('Jahr und Event sind Pflichtfelder', 'err'); return; }
+  try {
+    await sb('/rest/v1/history', 'POST', { year, event, place:place||null, award:award||null });
+    toast('Eintrag gespeichert ✓');
+    clearHistoryForm();
+    loadHistory();
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+async function deleteHistory(id) {
+  if (!confirm('Eintrag wirklich löschen?')) return;
+  try {
+    await sb(`/rest/v1/history?id=eq.${id}`, 'DELETE');
+    toast('Eintrag gelöscht');
+    loadHistory();
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+function clearHistoryForm() {
+  ['h-year','h-event','h-place','h-award'].forEach(id => document.getElementById(id).value = '');
+}
+
+// ── CONTENT (about + repertoire) ─────────────────────────────────────
+async function loadContent() {
+  try {
+    const data = await sb('/rest/v1/site_content?select=*');
+    if (!data) return;
+    const map = {};
+    data.forEach(r => map[r.key] = r.value);
+    if (map['about_p1'])  document.getElementById('about-p1').value  = map['about_p1'];
+    if (map['about_p2'])  document.getElementById('about-p2').value  = map['about_p2'];
+    if (map['about_count']) document.getElementById('about-count').value = map['about_count'];
+    if (map['rep_jazz'])     document.getElementById('rep-jazz').value     = map['rep_jazz'];
+    if (map['rep_funk'])     document.getElementById('rep-funk').value     = map['rep_funk'];
+    if (map['rep_electronic']) document.getElementById('rep-electronic').value = map['rep_electronic'];
+    if (map['rep_original']) document.getElementById('rep-original').value = map['rep_original'];
+  } catch(e) { /* silently fail, not critical */ }
+}
+
+async function upsertContent(key, value) {
+  await sb('/rest/v1/site_content', 'POST', { key, value });
+}
+
+async function saveAbout() {
+  try {
+    const pairs = [
+      ['about_p1',    document.getElementById('about-p1').value],
+      ['about_p2',    document.getElementById('about-p2').value],
+      ['about_count', document.getElementById('about-count').value],
+    ];
+    // Use upsert via Prefer header
+    await fetch(`${SB_URL}/rest/v1/site_content`, {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'apikey':SB_ANON,
+        'Authorization':`Bearer ${ACCESS_TOKEN}`,
+        'Prefer':'resolution=merge-duplicates'
+      },
+      body: JSON.stringify(pairs.map(([key,value])=>({key,value})))
+    });
+    toast('Über uns gespeichert ✓');
+  } catch(e) { toast(e.message,'err'); }
+}
+
+async function saveRepertoire() {
+  try {
+    const pairs = [
+      ['rep_jazz',       document.getElementById('rep-jazz').value],
+      ['rep_funk',       document.getElementById('rep-funk').value],
+      ['rep_electronic', document.getElementById('rep-electronic').value],
+      ['rep_original',   document.getElementById('rep-original').value],
+    ];
+    await fetch(`${SB_URL}/rest/v1/site_content`, {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'apikey':SB_ANON,
+        'Authorization':`Bearer ${ACCESS_TOKEN}`,
+        'Prefer':'resolution=merge-duplicates'
+      },
+      body: JSON.stringify(pairs.map(([key,value])=>({key,value})))
+    });
+    toast('Repertoire gespeichert ✓');
+  } catch(e) { toast(e.message,'err'); }
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
