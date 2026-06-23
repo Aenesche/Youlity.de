@@ -1,818 +1,811 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Youlity Admin</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Youlity – Bigband & Combo Berlin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=Space+Mono&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
     :root {
-      --bg:#07050f; --surface:#0e0b1a; --surface2:#16102a;
-      --pink:#ed24c8; --pink-dim:#5c1049; --pink-glow:rgba(237,36,200,0.1);
-      --text:#f0eaf8; --muted:#6b607a; --border:rgba(237,36,200,0.2);
-      --green:#2ecc71; --red:#e74c3c; --yellow:#f1c40f;
+      --bg:#07050f; --surface:#0e0b1a; --pink:#ed24c8; --pink-dim:#5c1049;
+      --pink-glow:rgba(237,36,200,0.12); --text:#f0eaf8; --muted:#6b607a;
+      --border:rgba(237,36,200,0.18);
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+    html{scroll-behavior:smooth;}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden;}
 
-    /* ── LOGIN ── */
-    #loginScreen{
-      position:fixed;inset:0;background:var(--bg);z-index:999;
-      display:flex;align-items:center;justify-content:center;
-    }
-    .login-box{
-      width:min(380px,90vw);
-      border:1px solid var(--border);background:var(--surface);padding:2.5rem;
-    }
-    .login-box h1{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.1em;margin-bottom:.3rem;}
-    .login-box p{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-bottom:2rem;}
-    .login-box input{
-      width:100%;background:#050510;color:var(--text);border:1px solid var(--border);
-      padding:.75rem 1rem;font-family:'Space Mono',monospace;font-size:.75rem;
-      margin-bottom:.75rem;outline:none;transition:border-color .2s;
-    }
-    .login-box input:focus{border-color:var(--pink);}
-    #loginErr{font-family:'Space Mono',monospace;font-size:.58rem;color:var(--red);margin-bottom:.75rem;display:none;}
+    /* INTRO */
+    #intro{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;}
+    .intro-name{font-family:'Bebas Neue',sans-serif;font-size:clamp(4.5rem,18vw,14rem);letter-spacing:.04em;line-height:1;overflow:hidden;}
+    .intro-name span{display:block;transform:translateY(110%);animation:introUp .95s cubic-bezier(.16,1,.3,1) .25s forwards;}
+    .intro-sub{font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.35em;color:var(--pink);text-transform:uppercase;opacity:0;animation:introFade .6s ease 1s forwards;}
+    #intro.hide{animation:introOut .9s cubic-bezier(.7,0,1,.3) 2.4s forwards;}
+    @keyframes introUp{to{transform:translateY(0);}}
+    @keyframes introFade{to{opacity:1;}}
+    @keyframes introOut{to{clip-path:inset(0 0 100% 0);}}
 
-    /* ── SHARED BUTTON ── */
-    .btn{
-      font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;
-      padding:.6rem 1.2rem;border:1px solid var(--border);background:none;color:var(--muted);
-      cursor:pointer;transition:all .2s;
-    }
-    .btn:hover{border-color:var(--pink);color:var(--pink);background:var(--pink-glow);}
-    .btn.primary{border-color:var(--pink);color:var(--pink);background:var(--pink-glow);}
-    .btn.primary:hover{background:rgba(237,36,200,0.2);}
-    .btn.danger{border-color:var(--red);color:var(--red);}
-    .btn.danger:hover{background:rgba(231,76,60,0.1);}
-    .btn.success{border-color:var(--green);color:var(--green);}
-    .btn.success:hover{background:rgba(46,204,113,0.1);}
-    .btn.full{width:100%;}
+    /* VINYL BG */
+    #vinyl-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.25;}
 
-    /* ── LAYOUT ── */
-    #app{display:none;min-height:100vh;}
+    /* NAV */
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1.6rem 3rem;transition:background .3s,padding .3s;}
+    nav.scrolled{background:rgba(7,5,15,.92);backdrop-filter:blur(14px);padding:.9rem 3rem;border-bottom:1px solid var(--border);}
+    .nav-logo{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:.12em;color:var(--text);text-decoration:none;}
+    .nav-links{display:flex;gap:2rem;list-style:none;}
+    .nav-links a{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s;}
+    .nav-links a:hover{color:var(--pink);}
+    .nav-toggle{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:4px;}
+    .nav-toggle span{display:block;width:22px;height:1px;background:var(--text);}
 
-    header{
-      position:sticky;top:0;z-index:50;
-      background:rgba(7,5,15,.95);backdrop-filter:blur(12px);
-      border-bottom:1px solid var(--border);
-      display:flex;align-items:center;justify-content:space-between;
-      padding:.9rem 2rem;
-    }
-    .header-left{display:flex;align-items:center;gap:1.5rem;}
-    .logo{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.12em;color:var(--text);}
-    .logo span{color:var(--pink);}
-    .user-tag{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.15em;color:var(--muted);}
+    /* SECTION BASE */
+    section{position:relative;z-index:1;}
+    .inner{max-width:1100px;margin:0 auto;padding:0 2rem;}
+    .s-tag{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.3em;color:var(--pink);text-transform:uppercase;margin-bottom:1rem;}
+    .s-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,8vw,7rem);line-height:.88;letter-spacing:.02em;color:var(--text);margin-bottom:3.5rem;}
+    .s-title .o{-webkit-text-stroke:1px var(--pink);color:transparent;}
 
-    /* ── TABS ── */
-    .tabs{
-      display:flex;gap:0;border-bottom:1px solid var(--border);
-      padding:0 2rem;overflow-x:auto;
-    }
-    .tab{
-      font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;
-      padding:.9rem 1.4rem;border:none;background:none;color:var(--muted);cursor:pointer;
-      border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s;
-    }
-    .tab:hover{color:var(--text);}
-    .tab.active{color:var(--pink);border-bottom-color:var(--pink);}
+    /* REVEAL */
+    .rv{opacity:0;transform:translateY(36px);transition:opacity .85s ease,transform .85s cubic-bezier(.16,1,.3,1);}
+    .rv.on{opacity:1;transform:translateY(0);}
+    .d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.3s}
+    .d4{transition-delay:.4s}.d5{transition-delay:.5s}.d6{transition-delay:.6s}
 
-    /* ── MAIN CONTENT ── */
-    .content{max-width:900px;margin:0 auto;padding:2.5rem 2rem;}
+    /* HERO */
+    #hero{height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 2rem;}
+    .hero-tag{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.35em;color:var(--pink);text-transform:uppercase;margin-bottom:1.5rem;opacity:0;animation:fadeUp .8s ease 2.8s forwards;}
+    .hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(5.5rem,22vw,17rem);line-height:.86;letter-spacing:.02em;color:var(--text);opacity:0;animation:fadeUp .9s cubic-bezier(.16,1,.3,1) 3s forwards;}
+    .hero-sub{margin-top:1.8rem;font-size:1.05rem;font-weight:300;letter-spacing:.04em;color:var(--muted);opacity:0;animation:fadeUp .8s ease 3.2s forwards;}
+    .hero-scroll{position:absolute;bottom:3rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.6rem;opacity:0;animation:fadeUp .8s ease 3.7s forwards;}
+    .hero-scroll span{font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.25em;color:var(--muted);text-transform:uppercase;}
+    .scroll-line{width:1px;height:52px;background:linear-gradient(to bottom,var(--pink),transparent);animation:scrollP 2.2s ease-in-out infinite;}
+    @keyframes scrollP{0%,100%{opacity:.3;transform:scaleY(1)}50%{opacity:1;transform:scaleY(1.15)}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 
-    .section-title{
-      font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:.06em;
-      color:var(--text);margin-bottom:.4rem;
-    }
-    .section-sub{
-      font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.2em;
-      color:var(--muted);text-transform:uppercase;margin-bottom:2rem;
-    }
+    /* ÜBER UNS */
+    #about{padding:10rem 0;}
+    .about-grid{display:grid;grid-template-columns:1fr 1.6fr;gap:6rem;align-items:start;}
+    .about-text{font-size:1.15rem;line-height:1.85;color:var(--muted);font-weight:300;}
+    .about-text strong{color:var(--text);font-weight:400;}
+    .about-text+.about-text{margin-top:1.5rem;}
+    .stats{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:3rem;}
+    .stat{border:1px solid var(--border);padding:1.4rem;background:var(--surface);}
+    .stat .n{font-family:'Bebas Neue',sans-serif;font-size:3.2rem;color:var(--pink);line-height:1;}
+    .stat .l{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-top:.4rem;}
+    .pill-row{display:flex;gap:.8rem;margin-top:2rem;flex-wrap:wrap;}
+    .pill{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;padding:.55rem 1.1rem;border:1px solid var(--border);color:var(--muted);text-decoration:none;transition:all .2s;}
+    .pill:hover{border-color:var(--pink);color:var(--pink);background:var(--pink-glow);}
 
-    /* ── FORM ── */
-    .form-box{
-      border:1px solid var(--border);background:var(--surface);
-      padding:1.8rem;margin-bottom:2rem;
-    }
-    .form-box h3{
-      font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.22em;
-      color:var(--pink);text-transform:uppercase;margin-bottom:1.2rem;
-    }
-    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;}
-    .form-grid.three{grid-template-columns:1fr 1fr 1fr;}
-    .form-grid.one{grid-template-columns:1fr;}
-    @media(max-width:600px){.form-grid,.form-grid.three{grid-template-columns:1fr;}}
+    /* MITGLIEDER */
+    #members{padding:8rem 0;background:linear-gradient(to bottom,transparent,var(--surface),transparent);}
+    .members-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);}
+    .m-card{background:var(--bg);padding:1.8rem 1.5rem;position:relative;overflow:hidden;transition:background .3s;}
+    .m-card::after{content:'';position:absolute;bottom:0;left:0;width:100%;height:2px;background:var(--pink);transform:scaleX(0);transition:transform .3s;transform-origin:left;}
+    .m-card:hover{background:var(--surface);}
+    .m-card:hover::after{transform:scaleX(1);}
+    .m-photo{width:100%;aspect-ratio:1;background:var(--surface);border:1px solid var(--border);margin-bottom:1rem;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:var(--pink-dim);overflow:hidden;}
+    .m-photo img{width:100%;height:100%;object-fit:cover;}
+    .m-inst{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.2em;color:var(--pink);text-transform:uppercase;margin-bottom:.35rem;}
+    .m-name{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:.04em;color:var(--text);}
 
-    .field{display:flex;flex-direction:column;gap:.4rem;}
-    .field.span2{grid-column:span 2;}
-    .field.span3{grid-column:span 3;}
-    @media(max-width:600px){.field.span2,.field.span3{grid-column:span 1;}}
+    /* KONZERTE */
+    #concerts{padding:8rem 0;}
+    .concert-ctrl{display:flex;gap:.75rem;margin-bottom:1.75rem;flex-wrap:wrap;}
+    .s-btn{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;padding:.45rem .9rem;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;transition:all .2s;}
+    .s-btn:hover,.s-btn.a{border-color:var(--pink);color:var(--pink);background:var(--pink-glow);}
+    .c-list{display:flex;flex-direction:column;gap:1px;background:var(--border);border:1px solid var(--border);}
+    .c-item{display:grid;grid-template-columns:90px 1fr auto;gap:2rem;align-items:center;padding:1.4rem 2rem;background:var(--bg);transition:background .2s;}
+    .c-item:hover{background:var(--surface);}
+    .c-date{font-family:'Bebas Neue',sans-serif;font-size:2.1rem;line-height:1;color:var(--pink);}
+    .c-date small{display:block;font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.2em;color:var(--muted);margin-top:.15rem;}
+    .c-venue{font-size:.98rem;font-weight:500;color:var(--text);}
+    .c-city{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.1em;color:var(--muted);margin-top:.2rem;}
+    .c-tag{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;padding:.35rem .75rem;border:1px solid var(--border);color:var(--muted);}
+    .c-tag.up{border-color:var(--pink);color:var(--pink);}
+    .c-empty{padding:2.5rem;text-align:center;font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;background:var(--bg);}
 
-    label{
-      font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.18em;
-      color:var(--muted);text-transform:uppercase;
+    /* GATEFOLD */
+    #releases { height: 400vh; position: relative; }
+    .sticky {
+      position: sticky; top: 0; height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 1.5rem;
     }
-    input[type="text"],input[type="date"],input[type="email"],input[type="url"],
-    input[type="password"],textarea,select{
-      background:#050510;color:var(--text);border:1px solid var(--border);
-      padding:.6rem .9rem;font-family:'DM Sans',sans-serif;font-size:.9rem;
-      outline:none;transition:border-color .2s;width:100%;
-    }
-    input:focus,textarea:focus,select:focus{border-color:var(--pink);}
-    textarea{resize:vertical;min-height:90px;line-height:1.6;}
-    select option{background:var(--bg);}
+    .hint { font-size:.55rem; letter-spacing:.25em; color:var(--muted); text-transform:uppercase; transition:opacity .4s; }
+    .gf-wrap { perspective: 1400px; }
+    .gf { position:relative; width:min(720px,94vw); aspect-ratio:2/1; }
+    .panel { position:absolute; top:0; left:50%; width:50%; height:100%; }
 
-    .form-actions{display:flex;gap:.75rem;margin-top:1.2rem;flex-wrap:wrap;}
+    /* Panel 5 */
+    #p5 { z-index:1; background:#080514; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; }
 
-    /* ── LIST ITEMS ── */
-    .item-list{display:flex;flex-direction:column;gap:1px;background:var(--border);}
-    .item{
-      background:var(--bg);padding:1.1rem 1.4rem;
-      display:flex;align-items:center;justify-content:space-between;gap:1rem;
-      transition:background .2s;
+    /* small vinyl (combo, panel 5) */
+    .vinyl-sm {
+      width:min(145px,26vw); height:min(145px,26vw);
+      border-radius:50%; flex-shrink:0; position:relative;
+      background:
+        radial-gradient(circle,#000 0%,#000 7%,transparent 7%),
+        radial-gradient(circle,var(--pink-dim) 0%,var(--pink-dim) 26%,transparent 26%),
+        repeating-radial-gradient(circle,#0f0f0f 0px,#1c1c1c 1.5px,#0f0f0f 3px);
+      /* ↓ much brighter glow */
+      box-shadow: 0 0 25px 8px rgba(237,36,200,0.7), 0 0 60px 15px rgba(237,36,200,0.35);
+      animation:spin 5s linear infinite;
     }
-    .item:hover{background:var(--surface);}
-    .item-info{flex:1;min-width:0;}
-    .item-main{font-size:.95rem;font-weight:500;color:var(--text);margin-bottom:.2rem;}
-    .item-meta{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.1em;color:var(--muted);}
-    .item-badge{
-      font-family:'Space Mono',monospace;font-size:.48rem;letter-spacing:.14em;text-transform:uppercase;
-      padding:.25rem .6rem;border:1px solid;white-space:nowrap;
-    }
-    .badge-up{border-color:var(--green);color:var(--green);}
-    .badge-past{border-color:var(--muted);color:var(--muted);}
-    .item-actions{display:flex;gap:.5rem;flex-shrink:0;}
-
-    /* ── EMPTY STATE ── */
-    .empty{
-      padding:3rem;text-align:center;border:1px dashed var(--border);
-      font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.2em;
-      color:var(--muted);text-transform:uppercase;
+    .vinyl-sm::after {
+      content:''; position:absolute; top:50%; left:50%;
+      transform:translate(-50%,-50%);
+      width:28%; height:28%; border-radius:50%;
+      background:url('logo.png') center/70% no-repeat, var(--pink);
     }
 
-    /* ── TOAST ── */
-    #toast{
-      position:fixed;bottom:2rem;right:2rem;z-index:9999;
-      font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.15em;
-      padding:.8rem 1.4rem;border:1px solid;
-      transform:translateY(4rem);opacity:0;transition:all .3s;pointer-events:none;
+    /* big css vinyl (bigband, panel 3) */
+    .css-vinyl {
+      opacity:0; transition:opacity .5s;
+      width:min(240px,43vw); height:min(240px,43vw);
+      border-radius:50%; position:relative; flex-shrink:0;
+      background:
+        radial-gradient(circle,#000 0%,#000 4%,transparent 4%),
+        radial-gradient(circle,#9040e0 0%,#5c1049 18%,transparent 18%),
+        repeating-radial-gradient(circle,
+          #0c0c1a 0px,#181828 1px,#0c0c1a 2.5px,#1a1a2e 3.5px,
+          #0c0c1a 5px,#161626 6px,#0c0c1a 7.5px);
+      /* ↓ much brighter glow */
+      box-shadow:
+        0 0 0 1px rgba(237,36,200,0.3),
+        0 0 30px 10px rgba(237,36,200,0.65),
+        0 0 80px 20px rgba(140,50,220,0.45),
+        inset 0 0 30px rgba(0,0,0,0.8);
+      animation:spin 6s linear infinite;
     }
-    #toast.show{transform:translateY(0);opacity:1;}
-    #toast.ok{border-color:var(--green);color:var(--green);background:rgba(46,204,113,.08);}
-    #toast.err{border-color:var(--red);color:var(--red);background:rgba(231,76,60,.08);}
-
-    /* ── SPINNER ── */
-    .spin{
-      display:inline-block;width:14px;height:14px;
-      border:2px solid var(--border);border-top-color:var(--pink);
-      border-radius:50%;animation:rot .7s linear infinite;vertical-align:middle;
+    .css-vinyl::before {
+      content:''; position:absolute; inset:0; border-radius:50%;
+      background:conic-gradient(
+        from 30deg,
+        transparent 0deg, rgba(237,36,200,0.12) 40deg, transparent 80deg,
+        rgba(255,255,255,0.05) 160deg, transparent 200deg,
+        rgba(140,50,220,0.09) 280deg, transparent 360deg);
     }
-    @keyframes rot{to{transform:rotate(360deg);}}
+    .css-vinyl::after {
+      content:''; position:absolute; top:50%; left:50%;
+      transform:translate(-50%,-50%);
+      width:18%; height:18%; border-radius:50%;
+      background:url('logo.png') center/75% no-repeat, #9040e0;
+    }
 
-    /* ── TEXTAREA LARGE ── */
-    .big-text{min-height:160px;}
+    /* card 3/4 */
+    #card34 { z-index:2; transform-origin:left center; transform-style:preserve-3d; }
+    #p3 { position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; background:#0e0b1a; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; }
+    #p4 { position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; transform:rotateY(180deg); background:#1a0d25; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; padding:1.8rem; }
 
-    /* ── PANEL ── */
-    .pane{display:none;}
-    .pane.active{display:block;}
+    /* card 1/2 */
+    #card12 { z-index:3; transform-origin:left center; transform-style:preserve-3d; }
+    #p1 { position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; background:url('cover-front.png') center/cover no-repeat, #200d2e; border:1px solid var(--border); }
+    #p2 { position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; transform:rotateY(180deg); background:#1a0d25; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; padding:1.8rem; }
+
+    /* tracklist — bigger + brighter */
+    .tl { width:100%; }
+    .tl-label  { font-size:.65rem; letter-spacing:.22em; color:var(--pink); text-transform:uppercase; margin-bottom:.5rem; }
+    .tl-title  { font-family:'Bebas Neue',sans-serif; font-size:clamp(1.2rem,3.5vw,1.8rem); color:#fff; letter-spacing:.05em; margin-bottom:.7rem; }
+    .tl-track  { font-size:.58rem; letter-spacing:.05em; color:#c8bedd; padding:.28rem 0; border-bottom:1px solid rgba(237,36,200,0.12); line-height:1.5; }
+    .tl-date   { font-size:.6rem; letter-spacing:.14em; color:var(--pink); margin-top:.8rem; }
+
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* HISTORY */
+    #history{padding:8rem 0;background:linear-gradient(to bottom,transparent,var(--surface),transparent);}
+    .h-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);}
+    .h-item{background:var(--bg);padding:2rem;transition:background .2s;}
+    .h-item:hover{background:var(--surface);}
+    .h-year{font-family:'Bebas Neue',sans-serif;font-size:2.8rem;color:var(--pink-dim);line-height:1;margin-bottom:.4rem;}
+    .h-event{font-size:.95rem;color:var(--text);margin-bottom:.2rem;}
+    .h-place{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;}
+    .h-award{margin-top:.7rem;font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.1em;color:var(--pink);}
+    .h-award::before{content:'★ ';}
+
+    /* REPERTOIRE */
+    #repertoire{padding:8rem 0;}
+    .rep-grid{display:grid;grid-template-columns:1fr 2fr;gap:5rem;align-items:start;}
+    .rep-cat{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--muted);cursor:pointer;border-left:2px solid transparent;padding-left:1rem;line-height:1.1;transition:all .25s;margin-bottom:.4rem;}
+    .rep-cat.a,.rep-cat:hover{color:var(--text);border-left-color:var(--pink);}
+    .rep-text{font-size:1.05rem;line-height:1.85;color:var(--muted);font-weight:300;}
+    .rep-text strong{color:var(--text);font-weight:400;}
+    .rep-pane{display:none;}.rep-pane.a{display:block;}
+
+    /* FOTOS */
+    #photos{padding:8rem 0;background:linear-gradient(to bottom,transparent,var(--surface),transparent);}
+    .p-grid{display:grid;grid-template-columns:repeat(12,1fr);grid-auto-rows:110px;gap:3px;}
+    .p-item{background:var(--surface);border:1px solid var(--border);overflow:hidden;cursor:pointer;position:relative;transition:border-color .2s;}
+    .p-item:hover{border-color:var(--pink);}
+    .p-item:nth-child(1){grid-column:span 5;grid-row:span 3;}
+    .p-item:nth-child(2){grid-column:span 7;grid-row:span 2;}
+    .p-item:nth-child(3){grid-column:span 3;grid-row:span 2;}
+    .p-item:nth-child(4){grid-column:span 4;grid-row:span 2;}
+    .p-item:nth-child(5){grid-column:span 5;grid-row:span 1;}
+    .p-item:nth-child(6){grid-column:span 4;grid-row:span 3;}
+    .p-item:nth-child(7){grid-column:span 8;grid-row:span 2;}
+    .p-item img{width:100%;height:100%;object-fit:cover;transition:transform .5s;}
+    .p-item:hover img{transform:scale(1.04);}
+    .p-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;}
+
+    /* VIDEOS */
+    #videos{padding:8rem 0;}
+    .v-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:1rem;}
+    .v-embed{position:relative;padding-bottom:56.25%;border:1px solid var(--border);overflow:hidden;background:var(--surface);}
+    .v-embed iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none;}
+    .v-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;}
+    .v-play{width:46px;height:46px;border:2px solid var(--pink);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--pink);font-size:.9rem;}
+    .v-cap{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;padding:.65rem 1rem;border-top:1px solid var(--border);}
+    .yt-link{text-align:center;margin-top:2.5rem;}
+
+    /* MERCH */
+    #merch{padding:8rem 0;background:linear-gradient(to bottom,transparent,var(--surface),transparent);}
+    .mc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);}
+    .mc{background:var(--bg);overflow:hidden;}
+    .mc-img{aspect-ratio:1;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:3rem;position:relative;}
+    .mc-over{position:absolute;inset:0;background:rgba(7,5,15,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;}
+    .mc-over span{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.28em;color:var(--pink);text-transform:uppercase;border:1px solid var(--pink);padding:.45rem .9rem;}
+    .mc-info{padding:1.2rem 1.5rem;}
+    .mc-name{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:.04em;color:var(--text);}
+    .mc-price{font-family:'Space Mono',monospace;font-size:.62rem;color:var(--muted);margin-top:.2rem;}
+
+    /* KONTAKT */
+    #contact{padding:8rem 0;text-align:center;}
+    .c-mail{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.6rem,5vw,4.2rem);color:var(--text);text-decoration:none;border-bottom:1px solid var(--pink);padding-bottom:.2rem;display:inline-block;transition:color .2s;letter-spacing:.02em;}
+    .c-mail:hover{color:var(--pink);}
+    .c-social{display:flex;gap:1rem;justify-content:center;margin-top:3rem;flex-wrap:wrap;}
+    .sn-banner{margin:4rem auto 0;max-width:540px;padding:1.8rem;border:1px solid var(--border);background:var(--surface);}
+    .sn-banner p{font-size:.92rem;line-height:1.75;color:var(--muted);}
+    .sn-banner strong{color:var(--text);font-weight:400;}
+
+    /* FOOTER */
+    footer{border-top:1px solid var(--border);padding:2rem 3rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;position:relative;z-index:1;}
+    .f-copy{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.15em;color:var(--muted);}
+    .f-links{display:flex;gap:2rem;}
+    .f-links a{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s;}
+    .f-links a:hover{color:var(--pink);}
+
+    /* RESPONSIVE */
+    @media(max-width:900px){
+      nav{padding:1.2rem 1.5rem;}nav.scrolled{padding:.8rem 1.5rem;}
+      .nav-links{display:none;flex-direction:column;position:absolute;top:100%;left:0;right:0;background:rgba(7,5,15,.97);padding:2rem;gap:1.5rem;border-bottom:1px solid var(--border);}
+      .nav-links.open{display:flex;}.nav-toggle{display:flex;}
+      .about-grid{grid-template-columns:1fr;gap:3rem;}
+      .rep-grid{grid-template-columns:1fr;gap:2rem;}
+      .h-grid{grid-template-columns:1fr;}
+      .c-item{grid-template-columns:70px 1fr;}.c-tag{display:none;}
+      .p-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:140px;}
+      .p-item{grid-column:span 1!important;grid-row:span 1!important;}
+      footer{padding:1.5rem;flex-direction:column;text-align:center;}
+    }
+
+    /* THEMES */
+    [data-theme="light"] {
+      --bg:#fafafa; --surface:#f0edf6; --pink:#c41aaa; --pink-dim:#8a1278;
+      --pink-glow:rgba(196,26,170,0.1); --text:#1a0d2e; --muted:#7a6a8a;
+      --border:rgba(180,20,150,0.2);
+    }
+    [data-theme="solar"] {
+      --bg:#fdf6e3; --surface:#eee8d5; --pink:#b5006e; --pink-dim:#7a004a;
+      --pink-glow:rgba(181,0,110,0.1); --text:#3a2a1a; --muted:#8a7060;
+      --border:rgba(150,80,0,0.2);
+    }
+    .theme-switch{display:flex;gap:0;border:1px solid var(--border);border-radius:4px;overflow:hidden;background:var(--surface);}
+    .theme-btn{background:none;border:none;cursor:pointer;padding:.35rem .6rem;font-size:.8rem;color:var(--muted);transition:background .2s,color .2s;line-height:1;}
+    .theme-btn+.theme-btn{border-left:1px solid var(--border);}
+    .theme-btn.active{background:var(--pink-glow);color:var(--pink);}
+    .theme-btn:hover:not(.active){color:var(--text);}
+    [data-theme="light"] #vinyl-canvas{opacity:.06;}
+    [data-theme="solar"] #vinyl-canvas{opacity:.07;}
+    [data-theme="light"] #p3,[data-theme="light"] #p4,[data-theme="light"] #p2{ background:#e8e0f0; }
+    [data-theme="solar"] #p3,[data-theme="solar"] #p4,[data-theme="solar"] #p2{ background:#e8dfc8; }
+    [data-theme="light"] #p5,[data-theme="solar"] #p5{ background:var(--surface); }
   </style>
 </head>
 <body>
 
-<!-- Passwort setzen nach Invite -->
-<div id="setPwScreen" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:10000;justify-content:center;align-items:center;">
-  <div class="login-box">
-    <h1>Passwort <span style="color:var(--pink)">setzen</span></h1>
-    <p>Wähle dein Passwort für den Admin-Zugang</p>
-    <input type="password" id="newPw" placeholder="Neues Passwort (mind. 6 Zeichen)"/>
-    <input type="password" id="newPw2" placeholder="Passwort wiederholen"/>
-    <div id="setPwErr" style="font-family:'Space Mono',monospace;font-size:.58rem;color:var(--red);margin-bottom:.75rem;display:none;"></div>
-    <button class="btn primary full" onclick="doSetPassword()">Passwort speichern & einloggen</button>
-  </div>
+<!-- INTRO -->
+<div id="intro">
+  <div class="intro-name"><span>YOULITY</span></div>
+  <div class="intro-sub">Bigband &amp; Combo · Berlin</div>
 </div>
 
+<canvas id="vinyl-canvas"></canvas>
 
-<!-- LOGIN -->
-<div id="loginScreen">
-  <div class="login-box">
-    <h1>Youlity <span style="color:var(--pink)">Admin</span></h1>
-    <p>Band Management · Secure Area</p>
-    <input type="email" id="loginEmail" placeholder="E-Mail" autocomplete="email"/>
-    <input type="password" id="loginPw" placeholder="Passwort" autocomplete="current-password"/>
-    <div id="loginErr">E-Mail oder Passwort falsch.</div>
-    <button class="btn primary full" onclick="doLogin()">Einloggen</button>
+<!-- NAV -->
+<nav id="nav">
+  <a href="#hero" class="nav-logo">Youlity</a>
+  <button class="nav-toggle" id="navToggle" aria-label="Menü">
+    <span></span><span></span><span></span>
+  </button>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#about">Über uns</a></li>
+    <li><a href="#concerts">Konzerte</a></li>
+    <li><a href="#releases">Release</a></li>
+    <li><a href="#merch">Merch</a></li>
+    <li><a href="#videos">Videos</a></li>
+    <li><a href="#members">Band</a></li>
+    <li><a href="#photos">Fotos</a></li>
+    <li><a href="#contact">Kontakt</a></li>
+  </ul>
+  <div class="theme-switch" id="themeSwitch" style="margin-left:1rem;">
+    <button class="theme-btn active" data-t="dark"  title="Dark">◑</button>
+    <button class="theme-btn"        data-t="light" title="Light">○</button>
+    <button class="theme-btn"        data-t="solar" title="Solarized">◐</button>
   </div>
-</div>
+</nav>
 
-<!-- APP -->
-<div id="app">
-  <header>
-    <div class="header-left">
-      <div class="logo">Youlity <span>Admin</span></div>
-      <div class="user-tag" id="userTag">—</div>
-    </div>
-    <div style="display:flex;gap:.75rem;align-items:center;">
-      <a href="index.html" class="btn" target="_blank">← Website</a>
-      <button class="btn danger" onclick="doLogout()">Logout</button>
-    </div>
-  </header>
-
-  <div class="tabs" id="tabBar">
-    <button class="tab active" data-tab="concerts">Konzerte</button>
-    <button class="tab" data-tab="members">Mitglieder</button>
-    <button class="tab" data-tab="history">Auftritte & Preise</button>
-    <button class="tab" data-tab="about">Über uns</button>
-    <button class="tab" data-tab="repertoire">Repertoire</button>
+<!-- HERO -->
+<section id="hero">
+  <div style="position:relative;z-index:2;text-align:center;">
+    <div class="hero-tag">Berlin · Bigband & Combo</div>
+    <h1 class="hero-title">YOULITY</h1>
+    <p class="hero-sub">Von Jazz bis Techno</p>
   </div>
-
-  <!-- KONZERTE -->
-  <div class="content pane active" id="pane-concerts">
-    <div class="section-title">Konzerte</div>
-    <div class="section-sub">Termine hinzufügen, bearbeiten, löschen</div>
-
-    <div class="form-box">
-      <h3>Neuer Termin</h3>
-      <div class="form-grid three">
-        <div class="field">
-          <label>Datum (Sortierung)</label>
-          <input type="date" id="c-date"/>
-        </div>
-        <div class="field">
-          <label>Anzeige-Datum (z.B. "5–7")</label>
-          <input type="text" id="c-date-display" placeholder="22"/>
-        </div>
-        <div class="field">
-          <label>Monat Jahr (z.B. "Jul 2026")</label>
-          <input type="text" id="c-month-year" placeholder="Jul 2026"/>
-        </div>
-        <div class="field span2">
-          <label>Venue / Veranstaltungsort</label>
-          <input type="text" id="c-venue" placeholder="Konzerthaus Berlin"/>
-        </div>
-        <div class="field">
-          <label>Stadt</label>
-          <input type="text" id="c-city" placeholder="Berlin"/>
-        </div>
-        <div class="field">
-          <label>Ticket-URL (optional)</label>
-          <input type="url" id="c-url" placeholder="https://..."/>
-        </div>
-        <div class="field">
-          <label>Button-Text</label>
-          <input type="text" id="c-label" placeholder="Tickets"/>
-        </div>
-        <div class="field">
-          <label>Status</label>
-          <select id="c-status">
-            <option value="upcoming">Kommend</option>
-            <option value="past">Vergangen</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-actions">
-        <button class="btn primary" onclick="addConcert()">Termin hinzufügen</button>
-        <button class="btn" onclick="clearConcertForm()">Felder leeren</button>
-      </div>
-    </div>
-
-    <div id="concertList"><div class="empty">Lade Termine… <span class="spin"></span></div></div>
+  <div class="hero-scroll">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
   </div>
+</section>
 
-  <!-- MITGLIEDER -->
-  <div class="content pane" id="pane-members">
-    <div class="section-title">Mitglieder</div>
-    <div class="section-sub">Bandmitglieder verwalten</div>
-
-    <div class="form-box">
-      <h3>Neues Mitglied</h3>
-      <div class="form-grid">
-        <div class="field">
-          <label>Name</label>
-          <input type="text" id="m-name" placeholder="Anna Knöppler"/>
-        </div>
-        <div class="field">
-          <label>Instrument / Rolle</label>
-          <input type="text" id="m-inst" placeholder="Alt-Saxophon"/>
-        </div>
-        <div class="field span2">
-          <label>Bio (optional)</label>
-          <textarea id="m-bio" placeholder="Kurze Beschreibung…"></textarea>
-        </div>
-        <div class="field">
-          <label>Reihenfolge (Zahl)</label>
-          <input type="text" id="m-order" placeholder="0"/>
+<!-- ÜBER UNS -->
+<section id="about">
+  <div class="inner">
+    <div class="about-grid">
+      <div>
+        <div class="s-tag rv">Über uns</div>
+        <h2 class="s-title rv d1">WIR<br>SIND<br><span class="o">YOULITY</span></h2>
+        <div class="stats">
+          <div class="stat rv d2"><div class="n" id="memberCount">~15+</div><div class="l">Mitglieder</div></div>
+          <div class="stat rv d3"><div class="n">∞</div><div class="l">Genres</div></div>
+          <div class="stat rv d4"><div class="n">BLN</div><div class="l">Heimatstadt</div></div>
+          <div class="stat rv d5"><div class="n">★★</div><div class="l">Ausgezeichnet</div></div>
         </div>
       </div>
-      <div class="form-actions">
-        <button class="btn primary" onclick="addMember()">Mitglied hinzufügen</button>
-        <button class="btn" onclick="clearMemberForm()">Felder leeren</button>
-      </div>
-    </div>
-
-    <div id="memberList"><div class="empty">Lade Mitglieder… <span class="spin"></span></div></div>
-  </div>
-
-  <!-- HISTORY -->
-  <div class="content pane" id="pane-history">
-    <div class="section-title">Auftritte & Preise</div>
-    <div class="section-sub">Vergangene Highlights und Auszeichnungen</div>
-
-    <div class="form-box">
-      <h3>Neuer Eintrag</h3>
-      <div class="form-grid">
-        <div class="field">
-          <label>Jahr</label>
-          <input type="text" id="h-year" placeholder="2024"/>
+      <div class="rv d2">
+        <div id="aboutText"></div>
+        <div class="pill-row" style="margin-top:2rem;">
+          <a href="https://www.instagram.com/youlity.bigband" target="_blank" class="pill">Instagram</a>
+          <a href="https://www.youtube.com/@YoulityBigbandBln" target="_blank" class="pill">YouTube</a>
         </div>
-        <div class="field">
-          <label>Event</label>
-          <input type="text" id="h-event" placeholder="Jazztreff Berlin"/>
-        </div>
-        <div class="field">
-          <label>Ort · Stadt</label>
-          <input type="text" id="h-place" placeholder="Konzerthaus · Berlin"/>
-        </div>
-        <div class="field">
-          <label>Auszeichnung (optional)</label>
-          <input type="text" id="h-award" placeholder="1. Platz"/>
-        </div>
-      </div>
-      <div class="form-actions">
-        <button class="btn primary" onclick="addHistory()">Eintrag hinzufügen</button>
-        <button class="btn" onclick="clearHistoryForm()">Felder leeren</button>
-      </div>
-    </div>
-
-    <div id="historyList"><div class="empty">Lade Einträge… <span class="spin"></span></div></div>
-  </div>
-
-  <!-- ÜBER UNS -->
-  <div class="content pane" id="pane-about">
-    <div class="section-title">Über uns</div>
-    <div class="section-sub">Freitext für die About-Sektion</div>
-
-    <div class="form-box">
-      <h3>Text bearbeiten</h3>
-      <div class="form-grid one">
-        <div class="field">
-          <label>Haupttext (Absatz 1)</label>
-          <textarea class="big-text" id="about-p1"></textarea>
-        </div>
-        <div class="field">
-          <label>Haupttext (Absatz 2, optional)</label>
-          <textarea class="big-text" id="about-p2"></textarea>
-        </div>
-        <div class="field">
-          <label>Mitglieder-Anzahl (Stat)</label>
-          <input type="text" id="about-count" placeholder="~15+"/>
-        </div>
-      </div>
-      <div class="form-actions">
-        <button class="btn primary" onclick="saveAbout()">Speichern</button>
       </div>
     </div>
   </div>
+</section>
 
-  <!-- REPERTOIRE -->
-  <div class="content pane" id="pane-repertoire">
-    <div class="section-title">Repertoire</div>
-    <div class="section-sub">Texte für die vier Kategorien</div>
+<!-- KONZERTE -->
+<section id="concerts">
+  <div class="inner">
+    <div class="s-tag rv">Live</div>
+    <h2 class="s-title rv d1">KOMMENDE <span class="o">KONZERTE</span></h2>
+    <div class="concert-ctrl rv d2">
+      <button class="s-btn a" data-sort="date-asc">Datum ↑</button>
+      <button class="s-btn" data-sort="date-desc">Datum ↓</button>
+      <button class="s-btn" data-sort="city">Stadt A–Z</button>
+    </div>
+    <div class="c-list rv d3" id="concertList"><div class="c-empty">Lade Termine…</div></div>
+  </div>
+</section>
 
-    <div class="form-box">
-      <h3>Texte bearbeiten</h3>
-      <div class="form-grid one">
-        <div class="field">
-          <label>Jazz</label>
-          <textarea class="big-text" id="rep-jazz"></textarea>
+<!-- RELEASES / GATEFOLD -->
+<div id="releases" style="height:400vh;position:relative;">
+  <div class="sticky">
+    <div class="hint" id="hint">↓ Scroll to open</div>
+    <div class="gf-wrap">
+      <div class="gf">
+        <div class="panel" id="p5"><div class="vinyl-sm"></div></div>
+        <div class="panel" id="card34">
+          <div id="p3"><div class="css-vinyl" id="vinyl"></div></div>
+          <div id="p4"><div class="tl" id="tl4"></div></div>
         </div>
-        <div class="field">
-          <label>Funk & Soul</label>
-          <textarea class="big-text" id="rep-funk"></textarea>
+        <div class="panel" id="card12">
+          <div id="p1"></div>
+          <div id="p2"><div class="tl" id="tl2"></div></div>
         </div>
-        <div class="field">
-          <label>Electronic</label>
-          <textarea class="big-text" id="rep-electronic"></textarea>
-        </div>
-        <div class="field">
-          <label>Eigene Stücke</label>
-          <textarea class="big-text" id="rep-original"></textarea>
-        </div>
-      </div>
-      <div class="form-actions">
-        <button class="btn primary" onclick="saveRepertoire()">Alle speichern</button>
       </div>
     </div>
   </div>
 </div>
 
-<div id="toast"></div>
+<!-- MERCH -->
+<section id="merch">
+  <div class="inner">
+    <div class="s-tag rv">Shop</div>
+    <h2 class="s-title rv d1">MERCH</h2>
+    <div class="mc-grid">
+      <div class="mc rv d1"><div class="mc-img">👕<div class="mc-over"><span>Coming Soon</span></div></div><div class="mc-info"><div class="mc-name">T-Shirt</div><div class="mc-price">XX,XX €</div></div></div>
+      <div class="mc rv d2"><div class="mc-img">Sticker<div class="mc-over"><span>Coming Soon</span></div></div><div class="mc-info"><div class="mc-name">Sticker</div><div class="mc-price">XX,XX €</div></div></div>
+      <div class="mc rv d3"><div class="mc-img">💿<div class="mc-over"><span>Coming Soon</span></div></div><div class="mc-info"><div class="mc-name">Vinyl / CD</div><div class="mc-price">25,00 €</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- HISTORY -->
+<section id="history">
+  <div class="inner">
+    <div class="s-tag rv">Rückblick</div>
+    <h2 class="s-title rv d1">AUFTRITTE &amp; <span class="o">PREISE</span></h2>
+    <div class="h-grid" id="historyGrid"></div>
+  </div>
+</section>
+
+<!-- REPERTOIRE -->
+<section id="repertoire">
+  <div class="inner">
+    <div class="s-tag rv">Was wir spielen</div>
+    <h2 class="s-title rv d1">REPERTO<span class="o">IRE</span></h2>
+    <div class="rep-grid">
+      <div class="rv d1">
+        <div class="rep-cat a" data-rep="jazz">Jazz</div>
+        <div class="rep-cat" data-rep="funk">Funk &amp; Soul</div>
+        <div class="rep-cat" data-rep="electronic">Electronic</div>
+        <div class="rep-cat" data-rep="original">Eigene Stücke</div>
+      </div>
+      <div class="rv d2">
+        <div class="rep-pane a" id="rep-jazz"><p class="rep-text"></p></div>
+        <div class="rep-pane" id="rep-funk"><p class="rep-text"></p></div>
+        <div class="rep-pane" id="rep-electronic"><p class="rep-text"></p></div>
+        <div class="rep-pane" id="rep-original"><p class="rep-text"></p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VIDEOS -->
+<section id="videos">
+  <div class="inner">
+    <div class="s-tag rv">YouTube</div>
+    <h2 class="s-title rv d1">VIDEOS</h2>
+    <div class="v-grid">
+      <div class="rv d1"><div class="v-embed"><div class="v-ph"><div class="v-play">▶</div></div></div><div class="v-cap">Video Placeholder 1</div></div>
+      <div class="rv d2"><div class="v-embed"><div class="v-ph"><div class="v-play">▶</div></div></div><div class="v-cap">Video Placeholder 2</div></div>
+      <div class="rv d3"><div class="v-embed"><div class="v-ph"><div class="v-play">▶</div></div></div><div class="v-cap">Video Placeholder 3</div></div>
+    </div>
+    <div class="yt-link rv d4"><a href="https://www.youtube.com/@YoulityBigbandBln" target="_blank" class="pill">Alle Videos auf YouTube →</a></div>
+  </div>
+</section>
+
+<!-- MITGLIEDER -->
+<section id="members">
+  <div class="inner">
+    <div class="s-tag rv">Die Band</div>
+    <h2 class="s-title rv d1">UNSER <span class="o">ENSEMBLE</span></h2>
+    <div class="members-grid" id="membersGrid"></div>
+  </div>
+</section>
+
+<!-- FOTOS -->
+<section id="photos">
+  <div class="inner">
+    <div class="s-tag rv">Galerie</div>
+    <h2 class="s-title rv d1">FOTO<span class="o">GALERIE</span></h2>
+    <div class="p-grid">
+      <div class="p-item rv d1"><div class="p-ph">Foto 1</div></div>
+      <div class="p-item rv d2"><div class="p-ph">Foto 2</div></div>
+      <div class="p-item rv d3"><div class="p-ph">Foto 3</div></div>
+      <div class="p-item rv d4"><div class="p-ph">Foto 4</div></div>
+      <div class="p-item rv d5"><div class="p-ph">Foto 5</div></div>
+      <div class="p-item rv d1"><div class="p-ph">Foto 6</div></div>
+      <div class="p-item rv d2"><div class="p-ph">Foto 7</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- KONTAKT -->
+<section id="contact">
+  <div class="inner">
+    <div class="s-tag rv">Schreib uns</div>
+    <h2 class="s-title rv d1">KON<span class="o">TAKT</span></h2>
+    <a href="mailto:Youlitybigband@gmail.com" class="c-mail rv d2">Youlitybigband@gmail.com</a>
+    <div class="c-social rv d3">
+      <a href="https://www.instagram.com/youlity.bigband" target="_blank" class="pill">Instagram</a>
+      <a href="https://www.youtube.com/@YoulityBigbandBln" target="_blank" class="pill">YouTube</a>
+    </div>
+    <div class="sn-banner rv d4">
+      <p><strong>Danke ❤️</strong><br>Unsere Startnext-Kampagne ist abgeschlossen — ein riesengroßes Dankeschön an alle, die uns auf diesem Weg unterstützt haben!</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="f-copy">© 2026 Youlity · Berlin</div>
+  <div class="f-links">
+    <a href="#">Impressum</a>
+    <a href="#">Datenschutz</a>
+    <a href="mailto:Youlitybigband@gmail.com">Kontakt</a>
+  </div>
+</footer>
 
 <script>
+const SUPABASE_URL  = 'https://hmopcvtzhcevouwmdwxa.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhtb3BjdnR6aGNldm91d21kd3hhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzI3MTMsImV4cCI6MjA5NDI0ODcxM30.tyZHv56vvqGfcSBaTUhkOwzZjDsBpS2x7BzLJKS0Wzc';
 
-const SB_URL  = 'https://hmopcvtzhcevouwmdwxa.supabase.co';
-const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhtb3BjdnR6aGNldm91d21kd3hhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzI3MTMsImV4cCI6MjA5NDI0ODcxM30.tyZHv56vvqGfcSBaTUhkOwzZjDsBpS2x7BzLJKS0Wzc';
-
-let ACCESS_TOKEN = null;
-
-// ── INVITE / PASSWORD-RESET FLOW ─────────────────────────────────────
-(function() {
-  const hash = {};
-  window.location.hash.slice(1).split('&').forEach(function(p) {
-    var parts = p.split('=');
-    var k = decodeURIComponent(parts[0] || '');
-    var v = decodeURIComponent((parts[1] || '').replace(/\+/g, ' '));
-    if (k) hash[k] = v;
-  });
-  if ((hash.type === 'invite' || hash.type === 'recovery') && hash.access_token) {
-    ACCESS_TOKEN = hash.access_token;
-    history.replaceState(null, '', window.location.pathname);
-    window.addEventListener('DOMContentLoaded', function() {
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('setPwScreen').style.display = 'flex';
-    });
+// INTRO
+const intro = document.getElementById('intro');
+window.scrollTo(0, 0);
+document.body.style.overflow = 'hidden';
+intro.classList.add('hide');
+intro.addEventListener('animationend', e => {
+  if (e.animationName === 'introOut') {
+    intro.style.display = 'none';
+    document.body.style.overflow = '';
   }
+});
+
+// VINYL BG
+(function(){
+  const canvas = document.getElementById('vinyl-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 100);
+  camera.position.z = 5;
+  const record = new THREE.Mesh(
+    new THREE.CylinderGeometry(1.5,1.5,0.07,64),
+    new THREE.MeshStandardMaterial({color:0x0d0818,roughness:.3,metalness:.7})
+  );
+  for(let i=0;i<12;i++){
+    const ring = new THREE.Mesh(
+      new THREE.TorusGeometry(.55+i*.08,.005,6,80),
+      new THREE.MeshStandardMaterial({color:0x2a1a3e,roughness:.5})
+    );
+    ring.rotation.x = Math.PI/2;
+    record.add(ring);
+  }
+  const tex = new THREE.TextureLoader().load('logo.png',undefined,undefined,()=>{});
+  record.add(new THREE.Mesh(new THREE.CylinderGeometry(.42,.42,.08,40), new THREE.MeshStandardMaterial({map:tex,color:0x5c1049,roughness:.6,metalness:.2})));
+  record.add(new THREE.Mesh(new THREE.CylinderGeometry(.06,.06,.12,20), new THREE.MeshStandardMaterial({color:0x000000})));
+  scene.add(record);
+  scene.add(Object.assign(new THREE.AmbientLight(0xffffff),{intensity:.4}));
+  const dir = new THREE.DirectionalLight(0xed24c8,2.2); dir.position.set(3,5,4); scene.add(dir);
+  const rim = new THREE.DirectionalLight(0x6b1059,1.0); rim.position.set(-4,-2,-3); scene.add(rim);
+  const bounds={x:2.8,y:1.6},pos={x:0,y:0},vel={x:.012,y:.009},tilt={x:.4,y:-.3};
+  (function animate(){
+    requestAnimationFrame(animate);
+    record.rotation.y+=.018; pos.x+=vel.x; pos.y+=vel.y;
+    if(Math.abs(pos.x)>bounds.x){vel.x*=-1;tilt.y*=-1;}
+    if(Math.abs(pos.y)>bounds.y){vel.y*=-1;tilt.x*=-1;}
+    record.position.set(pos.x,pos.y,0);
+    record.rotation.x+=(tilt.x-record.rotation.x)*.02;
+    record.rotation.z+=(tilt.y*.3-record.rotation.z)*.02;
+    renderer.render(scene,camera);
+  })();
+  window.addEventListener('resize',()=>{
+    camera.aspect=window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth,window.innerHeight);
+  });
 })();
 
-async function doSetPassword() {
-  const pw  = document.getElementById('newPw').value;
-  const pw2 = document.getElementById('newPw2').value;
-  const err = document.getElementById('setPwErr');
-  err.style.display = 'none';
-  if (pw !== pw2)    { err.textContent = 'Passwörter stimmen nicht überein.'; err.style.display = 'block'; return; }
-  if (pw.length < 6) { err.textContent = 'Mindestens 6 Zeichen.'; err.style.display = 'block'; return; }
-  try {
-    const res = await fetch(SB_URL + '/auth/v1/user', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'apikey': SB_ANON, 'Authorization': 'Bearer ' + ACCESS_TOKEN },
-      body: JSON.stringify({ password: pw })
-    });
-    if (!res.ok) { const e = await res.json(); throw new Error(e.message || 'Fehler'); }
-    localStorage.setItem('sb_token', ACCESS_TOKEN);
-    const userRes = await fetch(SB_URL + '/auth/v1/user', {
-      headers: { 'Authorization': 'Bearer ' + ACCESS_TOKEN, 'apikey': SB_ANON }
-    });
-    const user = await userRes.json();
-    document.getElementById('setPwScreen').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    document.getElementById('userTag').textContent = user.email || '';
-    loadAll();
-  } catch(e) {
-    document.getElementById('setPwErr').textContent = e.message;
-    document.getElementById('setPwErr').style.display = 'block';
-  }
-}
+// NAV
+const nav = document.getElementById('nav');
+const navLinks = document.getElementById('navLinks');
+window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',window.scrollY>50));
 
-
-
-// ── SUPABASE HELPERS ─────────────────────────────────────────────────
-async function sb(path, method='GET', body=null) {
-  const headers = {
-    'Content-Type': 'application/json',
-    'apikey': SB_ANON,
-    'Authorization': `Bearer ${ACCESS_TOKEN || SB_ANON}`,
-    'Prefer': method === 'POST' ? 'return=representation' : ''
-  };
-  const res = await fetch(SB_URL + path, {
-    method, headers,
-    body: body ? JSON.stringify(body) : null
+// THEME SWITCH
+const themeBtns = document.querySelectorAll('.theme-btn');
+const savedTheme = localStorage.getItem('youlity-theme') || 'dark';
+document.documentElement.dataset.theme = savedTheme;
+themeBtns.forEach(b => b.classList.toggle('active', b.dataset.t === savedTheme));
+themeBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const t = btn.dataset.t;
+    document.documentElement.dataset.theme = t;
+    localStorage.setItem('youlity-theme', t);
+    themeBtns.forEach(b => b.classList.toggle('active', b.dataset.t === t));
   });
-  if (!res.ok) {
-    const err = await res.json().catch(()=>({}));
-    throw new Error(err.message || err.error_description || res.statusText);
-  }
-  if (res.status === 204) return null;
+});
+
+document.getElementById('navToggle').addEventListener('click',()=>navLinks.classList.toggle('open'));
+navLinks.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>navLinks.classList.remove('open')));
+
+// SCROLL REVEAL
+const obs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting){e.target.classList.add('on');obs.unobserve(e.target);} });
+},{threshold:.08});
+document.querySelectorAll('.rv').forEach(el=>obs.observe(el));
+
+// KONZERT SORT
+document.querySelectorAll('.s-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.s-btn').forEach(b=>b.classList.remove('a'));
+    btn.classList.add('a');
+    const list=document.getElementById('concertList');
+    const items=[...list.querySelectorAll('.c-item')];
+    const sort=btn.dataset.sort;
+    items.sort((a,b)=>{
+      if(sort==='date-asc')  return a.dataset.date.localeCompare(b.dataset.date);
+      if(sort==='date-desc') return b.dataset.date.localeCompare(a.dataset.date);
+      if(sort==='city')      return a.dataset.city.localeCompare(b.dataset.city);
+    });
+    items.forEach(i=>list.prepend(i));
+  });
+});
+
+// REPERTOIRE
+document.querySelectorAll('.rep-cat').forEach(cat=>{
+  cat.addEventListener('click',()=>{
+    document.querySelectorAll('.rep-cat').forEach(c=>c.classList.remove('a'));
+    cat.classList.add('a');
+    document.querySelectorAll('.rep-pane').forEach(p=>p.classList.remove('a'));
+    document.getElementById('rep-'+cat.dataset.rep).classList.add('a');
+  });
+});
+
+// GATEFOLD
+document.getElementById('tl2').innerHTML = `
+  <div class="tl-label">Bigband Album</div>
+  <div class="tl-title">Youlity Bigband</div>
+  <div class="tl-track">01  North Africa – Arr. Mike Tomaro</div>
+  <div class="tl-track">02  Chips n'Salsa – Arr. Harry Kim</div>
+  <div class="tl-track">03  Not to be Forgotten – Arr. Bob Curnow</div>
+  <div class="tl-track">04  You & Me – Arr. Mark Rock Borissov</div>
+  <div class="tl-track">05  Feels so Good – Arr. Victor López</div>
+  <div class="tl-track">06  Shofukan – Arr. Mackinley Hill</div>
+  <div class="tl-date">Erscheint bald ✦</div>`;
+
+document.getElementById('tl4').innerHTML = `
+  <div class="tl-label">Combo Single</div>
+  <div class="tl-title">Youlity Combo</div>
+  <div class="tl-track">01  Hold the Line – Arr. Youlity Combo</div>
+  <div class="tl-track">02  I will Survive – Arr. Youlity Combo</div>
+  <div class="tl-track">Bonustrack: Smalltown Boy</div>
+  <div class="tl-date">Erscheint bald ✦</div>`;
+
+const releases = document.getElementById('releases');
+const card12   = document.getElementById('card12');
+const card34   = document.getElementById('card34');
+const vinyl    = document.getElementById('vinyl');
+const hint     = document.getElementById('hint');
+
+function ss(e0,e1,x){ const t=Math.max(0,Math.min(1,(x-e0)/(e1-e0))); return t*t*(3-2*t); }
+
+window.addEventListener('scroll',()=>{
+  const scrolled  = -releases.getBoundingClientRect().top;
+  const maxScroll = releases.offsetHeight - window.innerHeight;
+  const p = Math.max(0, Math.min(1, scrolled / maxScroll));
+
+  const pA = ss(0, .45, p);
+  card12.style.transform = `rotateY(${-pA*180}deg)`;
+  card12.style.zIndex = pA > .5 ? '1' : '3';
+  vinyl.style.opacity = p > .42 ? '1' : '0';
+
+  const pB = ss(.55, 1.0, p);
+  card34.style.transform = `rotateY(${-pB*180}deg)`;
+
+  if      (p < .05) hint.textContent = '↓ Scroll to open';
+  else if (p < .48) hint.textContent = 'Bigband Album';
+  else if (p < .58) hint.textContent = '↓';
+  else if (p < .97) hint.textContent = 'Combo Single';
+  else              hint.textContent = '';
+},{ passive:true });
+// ── SUPABASE DATA LOADING ─────────────────────────────────────────────
+async function sbFetch(path) {
+  const res = await fetch(SUPABASE_URL + path, {
+    headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON }
+  });
+  if (!res.ok) return null;
   return res.json();
 }
 
-async function sbAuth(email, password) {
-  const res = await fetch(`${SB_URL}/auth/v1/token?grant_type=password`, {
-    method:'POST',
-    headers:{'Content-Type':'application/json','apikey':SB_ANON},
-    body: JSON.stringify({email, password})
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error_description || data.message || 'Login fehlgeschlagen');
-  return data;
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-async function sbLogout() {
-  await fetch(`${SB_URL}/auth/v1/logout`, {
-    method:'POST',
-    headers:{'Authorization':`Bearer ${ACCESS_TOKEN}`,'apikey':SB_ANON}
-  });
+async function loadSiteData() {
+  await Promise.all([loadConcerts(), loadMembers(), loadHistory(), loadContent()]);
+  // re-trigger reveal observer for newly added elements
+  document.querySelectorAll('.rv:not(.on)').forEach(el => obs.observe(el));
 }
 
-// ── TOAST ────────────────────────────────────────────────────────────
-let toastTimer;
-function toast(msg, type='ok') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = `show ${type}`;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=> t.className = '', 3000);
-}
-
-// ── LOGIN / LOGOUT ───────────────────────────────────────────────────
-async function doLogin() {
-  const email = document.getElementById('loginEmail').value.trim();
-  const pw    = document.getElementById('loginPw').value;
-  const err   = document.getElementById('loginErr');
-  err.style.display = 'none';
-  try {
-    const data = await sbAuth(email, pw);
-    ACCESS_TOKEN = data.access_token;
-    localStorage.setItem('sb_token', ACCESS_TOKEN);
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    document.getElementById('userTag').textContent = data.user?.email || '';
-    loadAll();
-  } catch(e) {
-    err.textContent = e.message;
-    err.style.display = 'block';
-  }
-}
-
-async function doLogout() {
-  try { await sbLogout(); } catch(e) {}
-  ACCESS_TOKEN = null;
-  localStorage.removeItem('sb_token');
-  location.reload();
-}
-
-// Try auto-login from stored token
-(async function tryAutoLogin() {
-  const token = localStorage.getItem('sb_token');
-  if (!token) return;
-  try {
-    const res = await fetch(`${SB_URL}/auth/v1/user`, {
-      headers:{'Authorization':`Bearer ${token}`,'apikey':SB_ANON}
-    });
-    if (!res.ok) throw new Error();
-    const user = await res.json();
-    ACCESS_TOKEN = token;
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    document.getElementById('userTag').textContent = user.email || '';
-    loadAll();
-  } catch(e) {
-    localStorage.removeItem('sb_token');
-  }
-})();
-
-// Enter key on login
-document.getElementById('loginPw').addEventListener('keydown', e => {
-  if (e.key === 'Enter') doLogin();
-});
-
-// ── TABS ─────────────────────────────────────────────────────────────
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById('pane-' + tab.dataset.tab).classList.add('active');
-  });
-});
-
-// ── LOAD ALL ─────────────────────────────────────────────────────────
-async function loadAll() {
-  loadConcerts();
-  loadMembers();
-  loadHistory();
-  loadContent();
-}
-
-// ── CONCERTS ─────────────────────────────────────────────────────────
 async function loadConcerts() {
   const el = document.getElementById('concertList');
-  try {
-    const data = await sb('/rest/v1/concerts?order=date.asc&select=*');
-    if (!data || !data.length) {
-      el.innerHTML = '<div class="empty">Noch keine Termine — füge den ersten hinzu ↑</div>';
-      return;
-    }
-    el.innerHTML = '<div class="item-list">' + data.map(c => `
-      <div class="item">
-        <div class="item-info">
-          <div class="item-main">${esc(c.venue)}</div>
-          <div class="item-meta">${esc(c.date_display)} ${esc(c.month_year)} · ${esc(c.city)}${c.ticket_url ? ' · <a href="'+esc(c.ticket_url)+'" target="_blank" style="color:var(--pink)">'+esc(c.ticket_label||'Link')+'</a>' : ''}</div>
-        </div>
-        <span class="item-badge ${c.status==='upcoming'?'badge-up':'badge-past'}">${c.status==='upcoming'?'Kommend':'Vergangen'}</span>
-        <div class="item-actions">
-          <button class="btn danger" onclick="deleteConcert('${c.id}')">Löschen</button>
-        </div>
-      </div>`).join('') + '</div>';
-  } catch(e) {
-    el.innerHTML = `<div class="empty">Fehler: ${e.message}</div>`;
+  const data = await sbFetch('/rest/v1/concerts?order=date.asc&select=*');
+  if (!data || !data.length) {
+    el.innerHTML = '<div class="c-empty">Derzeit keine Termine eingetragen</div>';
+    return;
   }
+  el.innerHTML = data.map(c => `
+    <div class="c-item" data-date="${esc(c.date)}" data-city="${esc(c.city)}">
+      <div class="c-date">${esc(c.date_display)}<small>${esc(c.month_year)}</small></div>
+      <div>
+        <div class="c-venue">${esc(c.venue)}</div>
+        <div class="c-city">${esc(c.city)}</div>
+      </div>
+      ${c.ticket_url
+        ? `<a href="${esc(c.ticket_url)}" target="_blank" class="c-tag up">${esc(c.ticket_label||'Tickets')}</a>`
+        : `<span class="c-tag ${c.status==='upcoming'?'up':''}">${c.status==='upcoming'?'Kommend':'Vergangen'}</span>`
+      }
+    </div>`).join('');
+
+  // re-attach sort buttons
+  document.querySelectorAll('.s-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.s-btn').forEach(b => b.classList.remove('a'));
+      btn.classList.add('a');
+      const list = document.getElementById('concertList');
+      const items = [...list.querySelectorAll('.c-item')];
+      const sort = btn.dataset.sort;
+      items.sort((a,b) => {
+        if (sort==='date-asc')  return a.dataset.date.localeCompare(b.dataset.date);
+        if (sort==='date-desc') return b.dataset.date.localeCompare(a.dataset.date);
+        if (sort==='city')      return a.dataset.city.localeCompare(b.dataset.city);
+      });
+      items.forEach(i => list.prepend(i));
+    };
+  });
 }
 
-async function addConcert() {
-  const date         = document.getElementById('c-date').value;
-  const date_display = document.getElementById('c-date-display').value.trim();
-  const month_year   = document.getElementById('c-month-year').value.trim();
-  const venue        = document.getElementById('c-venue').value.trim();
-  const city         = document.getElementById('c-city').value.trim();
-  const ticket_url   = document.getElementById('c-url').value.trim();
-  const ticket_label = document.getElementById('c-label').value.trim() || 'Tickets';
-  const status       = document.getElementById('c-status').value;
-
-  if (!date || !venue || !city) { toast('Datum, Venue und Stadt sind Pflichtfelder', 'err'); return; }
-
-  try {
-    await sb('/rest/v1/concerts', 'POST', { date, date_display, month_year, venue, city, ticket_url:ticket_url||null, ticket_label, status });
-    toast('Termin gespeichert ✓');
-    clearConcertForm();
-    loadConcerts();
-  } catch(e) { toast(e.message, 'err'); }
-}
-
-async function deleteConcert(id) {
-  if (!confirm('Termin wirklich löschen?')) return;
-  try {
-    await sb(`/rest/v1/concerts?id=eq.${id}`, 'DELETE');
-    toast('Termin gelöscht');
-    loadConcerts();
-  } catch(e) { toast(e.message, 'err'); }
-}
-
-function clearConcertForm() {
-  ['c-date','c-date-display','c-month-year','c-venue','c-city','c-url','c-label'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('c-status').value = 'upcoming';
-}
-
-// ── MEMBERS ──────────────────────────────────────────────────────────
 async function loadMembers() {
-  const el = document.getElementById('memberList');
-  try {
-    const data = await sb('/rest/v1/members?order=sort_order.asc,created_at.asc&select=*');
-    if (!data || !data.length) {
-      el.innerHTML = '<div class="empty">Noch keine Mitglieder — füge das erste hinzu ↑</div>';
-      return;
-    }
-    el.innerHTML = '<div class="item-list">' + data.map(m => `
-      <div class="item">
-        <div class="item-info">
-          <div class="item-main">${esc(m.name)}</div>
-          <div class="item-meta">${esc(m.instrument)}${m.bio ? ' · '+esc(m.bio).slice(0,60)+'…' : ''}</div>
-        </div>
-        <div class="item-actions">
-          <button class="btn danger" onclick="deleteMember('${m.id}')">Löschen</button>
-        </div>
-      </div>`).join('') + '</div>';
-  } catch(e) {
-    el.innerHTML = `<div class="empty">Fehler: ${e.message}</div>`;
+  const el = document.getElementById('membersGrid');
+  if (!el) return;
+  const data = await sbFetch('/rest/v1/members?order=sort_order.asc,created_at.asc&select=*');
+  if (!data || !data.length) {
+    el.innerHTML = '<div class="c-empty" style="grid-column:1/-1;padding:2rem">Mitglieder werden bald eingetragen.</div>';
+    return;
   }
+  const delays = ['d1','d2','d3','d4','d5','d6'];
+  el.innerHTML = data.map((m, i) => `
+    <div class="m-card rv ${delays[i % 6]}">
+      <div class="m-photo">♩</div>
+      <div class="m-inst">${esc(m.instrument)}</div>
+      <div class="m-name">${esc(m.name)}</div>
+      ${m.bio ? `<div class="about-text" style="font-size:.85rem;margin-top:.5rem">${esc(m.bio)}</div>` : ''}
+    </div>`).join('');
+
+  const countEl = document.getElementById('memberCount');
+  if (countEl) countEl.textContent = data.length + '+';
 }
 
-async function addMember() {
-  const name       = document.getElementById('m-name').value.trim();
-  const instrument = document.getElementById('m-inst').value.trim();
-  const bio        = document.getElementById('m-bio').value.trim();
-  const sort_order = parseInt(document.getElementById('m-order').value) || 0;
-  if (!name || !instrument) { toast('Name und Instrument sind Pflichtfelder', 'err'); return; }
-  try {
-    await sb('/rest/v1/members', 'POST', { name, instrument, bio:bio||null, sort_order });
-    toast('Mitglied gespeichert ✓');
-    clearMemberForm();
-    loadMembers();
-  } catch(e) { toast(e.message, 'err'); }
-}
-
-async function deleteMember(id) {
-  if (!confirm('Mitglied wirklich löschen?')) return;
-  try {
-    await sb(`/rest/v1/members?id=eq.${id}`, 'DELETE');
-    toast('Mitglied gelöscht');
-    loadMembers();
-  } catch(e) { toast(e.message, 'err'); }
-}
-
-function clearMemberForm() {
-  ['m-name','m-inst','m-bio','m-order'].forEach(id => document.getElementById(id).value = '');
-}
-
-// ── HISTORY ──────────────────────────────────────────────────────────
 async function loadHistory() {
-  const el = document.getElementById('historyList');
-  try {
-    const data = await sb('/rest/v1/history?order=year.desc&select=*');
-    if (!data || !data.length) {
-      el.innerHTML = '<div class="empty">Noch keine Einträge — füge den ersten hinzu ↑</div>';
-      return;
-    }
-    el.innerHTML = '<div class="item-list">' + data.map(h => `
-      <div class="item">
-        <div class="item-info">
-          <div class="item-main">${esc(h.year)} · ${esc(h.event)}</div>
-          <div class="item-meta">${esc(h.place||'')}${h.award ? ' · ★ '+esc(h.award) : ''}</div>
-        </div>
-        <div class="item-actions">
-          <button class="btn danger" onclick="deleteHistory('${h.id}')">Löschen</button>
-        </div>
-      </div>`).join('') + '</div>';
-  } catch(e) {
-    el.innerHTML = `<div class="empty">Fehler: ${e.message}</div>`;
+  const el = document.getElementById('historyGrid');
+  if (!el) return;
+  const data = await sbFetch('/rest/v1/history?order=year.desc&select=*');
+  if (!data || !data.length) {
+    el.innerHTML = '<div class="h-item" style="grid-column:1/-1"><div class="h-event" style="color:var(--muted)">Einträge folgen bald.</div></div>';
+    return;
   }
+  const delays = ['d1','d2','d3','d4','d5','d6'];
+  el.innerHTML = data.map((h, i) => `
+    <div class="h-item rv ${delays[i % 6]}">
+      <div class="h-year">${esc(h.year)}</div>
+      <div class="h-event">${esc(h.event)}</div>
+      ${h.place ? `<div class="h-place">${esc(h.place)}</div>` : ''}
+      ${h.award ? `<div class="h-award">${esc(h.award)}</div>` : ''}
+    </div>`).join('');
 }
 
-async function addHistory() {
-  const year  = document.getElementById('h-year').value.trim();
-  const event = document.getElementById('h-event').value.trim();
-  const place = document.getElementById('h-place').value.trim();
-  const award = document.getElementById('h-award').value.trim();
-  if (!year || !event) { toast('Jahr und Event sind Pflichtfelder', 'err'); return; }
-  try {
-    await sb('/rest/v1/history', 'POST', { year, event, place:place||null, award:award||null });
-    toast('Eintrag gespeichert ✓');
-    clearHistoryForm();
-    loadHistory();
-  } catch(e) { toast(e.message, 'err'); }
-}
-
-async function deleteHistory(id) {
-  if (!confirm('Eintrag wirklich löschen?')) return;
-  try {
-    await sb(`/rest/v1/history?id=eq.${id}`, 'DELETE');
-    toast('Eintrag gelöscht');
-    loadHistory();
-  } catch(e) { toast(e.message, 'err'); }
-}
-
-function clearHistoryForm() {
-  ['h-year','h-event','h-place','h-award'].forEach(id => document.getElementById(id).value = '');
-}
-
-// ── CONTENT (about + repertoire) ─────────────────────────────────────
 async function loadContent() {
-  try {
-    const data = await sb('/rest/v1/site_content?select=*');
-    if (!data) return;
-    const map = {};
-    data.forEach(r => map[r.key] = r.value);
-    if (map['about_p1'])  document.getElementById('about-p1').value  = map['about_p1'];
-    if (map['about_p2'])  document.getElementById('about-p2').value  = map['about_p2'];
-    if (map['about_count']) document.getElementById('about-count').value = map['about_count'];
-    if (map['rep_jazz'])     document.getElementById('rep-jazz').value     = map['rep_jazz'];
-    if (map['rep_funk'])     document.getElementById('rep-funk').value     = map['rep_funk'];
-    if (map['rep_electronic']) document.getElementById('rep-electronic').value = map['rep_electronic'];
-    if (map['rep_original']) document.getElementById('rep-original').value = map['rep_original'];
-  } catch(e) { /* silently fail, not critical */ }
+  const data = await sbFetch('/rest/v1/site_content?select=*');
+  if (!data) return;
+  const map = {};
+  data.forEach(r => map[r.key] = r.value);
+
+  // About text
+  const aboutEl = document.getElementById('aboutText');
+  if (aboutEl) {
+    const p1 = map['about_p1'] || 'Youlity ist eine Berliner Bigband — Text folgt bald.';
+    const p2 = map['about_p2'] || '';
+    aboutEl.innerHTML =
+      `<p class="about-text"><strong>Youlity</strong> ${esc(p1)}</p>` +
+      (p2 ? `<p class="about-text" style="margin-top:1.5rem">${esc(p2)}</p>` : '');
+  }
+
+  // Repertoire
+  const repKeys = ['jazz','funk','electronic','original'];
+  repKeys.forEach(k => {
+    const el = document.querySelector(`#rep-${k} .rep-text`);
+    if (el && map[`rep_${k}`]) el.textContent = map[`rep_${k}`];
+  });
 }
 
-async function upsertContent(key, value) {
-  await sb('/rest/v1/site_content', 'POST', { key, value });
-}
+// Kick off after page loads
+loadSiteData();
 
-async function saveAbout() {
-  try {
-    const pairs = [
-      ['about_p1',    document.getElementById('about-p1').value],
-      ['about_p2',    document.getElementById('about-p2').value],
-      ['about_count', document.getElementById('about-count').value],
-    ];
-    // Use upsert via Prefer header
-    await fetch(`${SB_URL}/rest/v1/site_content`, {
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'apikey':SB_ANON,
-        'Authorization':`Bearer ${ACCESS_TOKEN}`,
-        'Prefer':'resolution=merge-duplicates'
-      },
-      body: JSON.stringify(pairs.map(([key,value])=>({key,value})))
-    });
-    toast('Über uns gespeichert ✓');
-  } catch(e) { toast(e.message,'err'); }
-}
-
-async function saveRepertoire() {
-  try {
-    const pairs = [
-      ['rep_jazz',       document.getElementById('rep-jazz').value],
-      ['rep_funk',       document.getElementById('rep-funk').value],
-      ['rep_electronic', document.getElementById('rep-electronic').value],
-      ['rep_original',   document.getElementById('rep-original').value],
-    ];
-    await fetch(`${SB_URL}/rest/v1/site_content`, {
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'apikey':SB_ANON,
-        'Authorization':`Bearer ${ACCESS_TOKEN}`,
-        'Prefer':'resolution=merge-duplicates'
-      },
-      body: JSON.stringify(pairs.map(([key,value])=>({key,value})))
-    });
-    toast('Repertoire gespeichert ✓');
-  } catch(e) { toast(e.message,'err'); }
-}
-
-// ── UTILS ─────────────────────────────────────────────────────────────
-function esc(s) {
-  if (!s) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-</script></script>
+</script>
 </body>
 </html>
