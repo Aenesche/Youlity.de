@@ -179,11 +179,24 @@
 </head>
 <body>
 
+<!-- Passwort setzen nach Invite -->
+<div id="setPwScreen" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:10000;align-items:center;justify-content:center;">
+  <div class="login-box">
+    <h1>Passwort <span style="color:var(--pink)">setzen</span></h1>
+    <p>Wähle dein Passwort für den Admin-Zugang</p>
+    <input type="password" id="newPw" placeholder="Neues Passwort (mind. 6 Zeichen)"/>
+    <input type="password" id="newPw2" placeholder="Passwort wiederholen"/>
+    <div id="setPwErr" style="font-family:'Space Mono',monospace;font-size:.58rem;color:var(--red);margin-bottom:.75rem;display:none;"></div>
+    <button class="btn primary full" onclick="doSetPassword()">Passwort speichern & einloggen</button>
+  </div>
+</div>
+
+
 <!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-box">
     <h1>Youlity <span style="color:var(--pink)">Admin</span></h1>
-    <p>Band Management · Secure Area</p>
+    <p>Band Management</p>
     <input type="email" id="loginEmail" placeholder="E-Mail" autocomplete="email"/>
     <input type="password" id="loginPw" placeholder="Passwort" autocomplete="current-password"/>
     <div id="loginErr">E-Mail oder Passwort falsch.</div>
@@ -395,6 +408,48 @@
 <div id="toast"></div>
 
 <script>
+
+// ── INVITE / PASSWORD-RESET FLOW ─────────────────────────────────────
+(function handleInvite() {
+  const hash = {};
+  window.location.hash.slice(1).split('&').forEach(p => {
+    const [k, v] = p.split('=');
+    if (k) hash[decodeURIComponent(k)] = decodeURIComponent(v || '');
+  });
+  if ((hash.type === 'invite' || hash.type === 'recovery') && hash.access_token) {
+    ACCESS_TOKEN = hash.access_token;
+    history.replaceState(null, '', window.location.pathname);
+    document.getElementById('loginScreen').style.display = 'none';
+    const s = document.getElementById('setPwScreen');
+    s.style.display = 'flex';
+  }
+})();
+
+async function doSetPassword() {
+  const pw  = document.getElementById('newPw').value;
+  const pw2 = document.getElementById('newPw2').value;
+  const err = document.getElementById('setPwErr');
+  err.style.display = 'none';
+  if (pw !== pw2)   { err.textContent = 'Passwörter stimmen nicht überein.'; err.style.display='block'; return; }
+  if (pw.length < 6){ err.textContent = 'Mindestens 6 Zeichen.'; err.style.display='block'; return; }
+  try {
+    const res = await fetch(`${SB_URL}/auth/v1/user`, {
+      method: 'PUT',
+      headers: { 'Content-Type':'application/json', 'apikey':SB_ANON, 'Authorization':`Bearer ${ACCESS_TOKEN}` },
+      body: JSON.stringify({ password: pw })
+    });
+    if (!res.ok) { const e = await res.json(); throw new Error(e.message || 'Fehler'); }
+    localStorage.setItem('sb_token', ACCESS_TOKEN);
+    const user = await (await fetch(`${SB_URL}/auth/v1/user`, {
+      headers:{'Authorization':`Bearer ${ACCESS_TOKEN}`,'apikey':SB_ANON}
+    })).json();
+    document.getElementById('setPwScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('userTag').textContent = user.email || '';
+    loadAll();
+  } catch(e) { err.textContent = e.message; err.style.display='block'; }
+}
+
 const SB_URL  = 'https://hmopcvtzhcevouwmdwxa.supabase.co';
 const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhtb3BjdnR6aGNldm91d21kd3hhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzI3MTMsImV4cCI6MjA5NDI0ODcxM30.tyZHv56vvqGfcSBaTUhkOwzZjDsBpS2x7BzLJKS0Wzc';
 
