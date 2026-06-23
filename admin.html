@@ -647,7 +647,7 @@ async function loadMembers() {
   try {
     const data = await sb('/rest/v1/members?order=sort_order.asc,created_at.asc&select=*');
     if (!data || !data.length) {
-      el.innerHTML = '<div class="empty">Noch keine Mitglieder — füge das erste hinzu ↑</div>';
+      el.innerHTML = '<div class="empty">Noch keine Mitglieder.. füge das erste hinzu ↑</div>';
       return;
     }
     el.innerHTML = '<div class="item-list">' + data.map(m => `
@@ -698,7 +698,7 @@ async function loadHistory() {
   try {
     const data = await sb('/rest/v1/history?order=year.desc&select=*');
     if (!data || !data.length) {
-      el.innerHTML = '<div class="empty">Noch keine Einträge — füge den ersten hinzu ↑</div>';
+      el.innerHTML = '<div class="empty">Noch keine Einträge.. füge den ersten hinzu ↑</div>';
       return;
     }
     el.innerHTML = '<div class="item-list">' + data.map(h => `
