@@ -196,7 +196,7 @@
 <div id="loginScreen">
   <div class="login-box">
     <h1>Youlity <span style="color:var(--pink)">Admin</span></h1>
-    <p>Kein zugriff für Unbefugte, lol.</p>
+    <p>BKein zugriff für unbefugte, LOL.</p>
     <input type="email" id="loginEmail" placeholder="E-Mail" autocomplete="email"/>
     <input type="password" id="loginPw" placeholder="Passwort" autocomplete="current-password"/>
     <div id="loginErr">E-Mail oder Passwort falsch.</div>
@@ -223,6 +223,7 @@
     <button class="tab" data-tab="history">Auftritte & Preise</button>
     <button class="tab" data-tab="about">Über uns</button>
     <button class="tab" data-tab="repertoire">Repertoire</button>
+    <button class="tab" data-tab="videos">Videos</button>
   </div>
 
   <!-- KONZERTE -->
@@ -404,6 +405,35 @@
     </div>
   </div>
 </div>
+  <!-- VIDEOS -->
+  <div class="content pane" id="pane-videos">
+    <div class="section-title">Videos</div>
+    <div class="section-sub">YouTube-Links verwalten — einfach URL einfügen</div>
+    <div class="form-box">
+      <h3>Neues Video</h3>
+      <div class="form-grid">
+        <div class="field span2">
+          <label>YouTube-URL (z.B. youtube.com/watch?v=... oder youtu.be/...)</label>
+          <input type="text" id="v-url" placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"/>
+        </div>
+        <div class="field">
+          <label>Titel</label>
+          <input type="text" id="v-title" placeholder="Konzert 2024 – Shofukan"/>
+        </div>
+        <div class="field">
+          <label>Reihenfolge</label>
+          <input type="text" id="v-order" placeholder="0"/>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn primary" onclick="addVideo()">Video hinzufügen</button>
+      </div>
+    </div>
+    <div id="videoList"><div class="empty">Lade Videos… <span class="spin"></span></div></div>
+  </div>
+
+
+</div>
 
 <div id="toast"></div>
 
@@ -580,6 +610,7 @@ async function loadAll() {
   loadMembers();
   loadHistory();
   loadContent();
+  loadVideos();
 }
 
 // ── CONCERTS ─────────────────────────────────────────────────────────
@@ -647,7 +678,7 @@ async function loadMembers() {
   try {
     const data = await sb('/rest/v1/members?order=sort_order.asc,created_at.asc&select=*');
     if (!data || !data.length) {
-      el.innerHTML = '<div class="empty">Noch keine Mitglieder.. füge das erste hinzu ↑</div>';
+      el.innerHTML = '<div class="empty">Noch keine Mitglieder — füge das erste hinzu ↑</div>';
       return;
     }
     el.innerHTML = '<div class="item-list">' + data.map(m => `
@@ -698,7 +729,7 @@ async function loadHistory() {
   try {
     const data = await sb('/rest/v1/history?order=year.desc&select=*');
     if (!data || !data.length) {
-      el.innerHTML = '<div class="empty">Noch keine Einträge.. füge den ersten hinzu ↑</div>';
+      el.innerHTML = '<div class="empty">Noch keine Einträge — füge den ersten hinzu ↑</div>';
       return;
     }
     el.innerHTML = '<div class="item-list">' + data.map(h => `
@@ -808,7 +839,124 @@ async function saveRepertoire() {
   } catch(e) { toast(e.message,'err'); }
 }
 
+// ── VIDEOS ────────────────────────────────────────────────────────────
+function parseYouTubeId(input) {
+  input = input.trim();
+  // Already just an ID (11 chars, no slash)
+  if (/^[a-zA-Z0-9_-]{11}$/.test(input)) return input;
+  // youtu.be/ID
+  const short = input.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+  if (short) return short[1];
+  // youtube.com/watch?v=ID or /embed/ID
+  const long = input.match(/(?:v=|embed\/)([a-zA-Z0-9_-]{11})/);
+  if (long) return long[1];
+  return null;
+}
+
+async function loadVideos() {
+  const el = document.getElementById('videoList');
+  const data = await sb('/rest/v1/videos?order=sort_order.asc,created_at.asc&select=*');
+  if (!data || !data.length) {
+    el.innerHTML = '<div class="empty">Noch keine Videos — füge das erste hinzu ↑</div>';
+    return;
+  }
+  el.innerHTML = '<div class="item-list">' + data.map(v => `
+    <div class="item">
+      <img src="https://img.youtube.com/vi/${v.youtube_id}/mqdefault.jpg"
+           style="width:80px;height:52px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;"/>
+      <div class="item-info">
+        <div class="item-main">${esc(v.title)}</div>
+        <div class="item-meta">youtube.com/watch?v=${esc(v.youtube_id)}</div>
+      </div>
+      <div class="item-actions">
+        <button class="btn danger" onclick="deleteVideo('${v.id}')">Löschen</button>
+      </div>
+    </div>`).join('') + '</div>';
+}
+
+async function addVideo() {
+  const raw   = document.getElementById('v-url').value;
+  const title = document.getElementById('v-title').value.trim();
+  const sort_order = parseInt(document.getElementById('v-order').value) || 0;
+  const youtube_id = parseYouTubeId(raw);
+  if (!youtube_id) { toast('Ungültige YouTube-URL oder ID', 'err'); return; }
+  if (!title)      { toast('Bitte einen Titel eingeben', 'err'); return; }
+  try {
+    await sb('/rest/v1/videos', 'POST', { youtube_id, title, sort_order });
+    toast('Video gespeichert ✓');
+    document.getElementById('v-url').value = '';
+    document.getElementById('v-title').value = '';
+    loadVideos();
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+async function deleteVideo(id) {
+  if (!confirm('Video wirklich löschen?')) return;
+  try {
+    await sb('/rest/v1/videos?id=eq.' + id, 'DELETE');
+    toast('Video gelöscht');
+    loadVideos();
+  } catch(e) { toast(e.message, 'err'); }
+}
+
 // ── UTILS ─────────────────────────────────────────────────────────────
+// ── VIDEOS ───────────────────────────────────────────────────────────
+function parseYouTubeId(input) {
+  input = (input || '').trim();
+  if (/^[a-zA-Z0-9_-]{11}$/.test(input)) return input;
+  var m = input.match(/(?:youtu\.be\/|v=|embed\/)([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+async function loadVideos() {
+  const el = document.getElementById('videoList');
+  if (!el) return;
+  try {
+    const data = await sb('/rest/v1/videos?order=sort_order.asc,created_at.asc&select=*');
+    if (!data || !data.length) {
+      el.innerHTML = '<div class="empty">Noch keine Videos — füge das erste hinzu ↑</div>';
+      return;
+    }
+    el.innerHTML = '<div class="item-list">' + data.map(v => `
+      <div class="item">
+        <img src="https://img.youtube.com/vi/${v.youtube_id}/mqdefault.jpg"
+             style="width:90px;height:56px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;"/>
+        <div class="item-info">
+          <div class="item-main">${esc(v.title)}</div>
+          <div class="item-meta">ID: ${esc(v.youtube_id)}</div>
+        </div>
+        <div class="item-actions">
+          <button class="btn danger" onclick="deleteVideo('${v.id}')">Löschen</button>
+        </div>
+      </div>`).join('') + '</div>';
+  } catch(e) { el.innerHTML = '<div class="empty">Fehler: ' + e.message + '</div>'; }
+}
+
+async function addVideo() {
+  const raw        = document.getElementById('v-url').value;
+  const title      = document.getElementById('v-title').value.trim();
+  const sort_order = parseInt(document.getElementById('v-order').value) || 0;
+  const youtube_id = parseYouTubeId(raw);
+  if (!youtube_id) { toast('Ungültige YouTube-URL', 'err'); return; }
+  if (!title)      { toast('Bitte einen Titel eingeben', 'err'); return; }
+  try {
+    await sb('/rest/v1/videos', 'POST', { youtube_id, title, sort_order });
+    toast('Video gespeichert ✓');
+    document.getElementById('v-url').value   = '';
+    document.getElementById('v-title').value = '';
+    loadVideos();
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+async function deleteVideo(id) {
+  if (!confirm('Video wirklich löschen?')) return;
+  try {
+    await sb('/rest/v1/videos?id=eq.' + id, 'DELETE');
+    toast('Video gelöscht');
+    loadVideos();
+  } catch(e) { toast(e.message, 'err'); }
+}
+
 function esc(s) {
   if (!s) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
