@@ -459,11 +459,7 @@
   <div class="inner">
     <div class="s-tag rv">YouTube</div>
     <h2 class="s-title rv d1">VIDEOS</h2>
-    <div class="v-grid">
-      <div class="rv d1"><div class="v-embed"><div class="v-ph"><div class="v-play">▶</div></div></div><div class="v-cap">Video Placeholder 1</div></div>
-      <div class="rv d2"><div class="v-embed"><div class="v-ph"><div class="v-play">▶</div></div></div><div class="v-cap">Video Placeholder 2</div></div>
-      <div class="rv d3"><div class="v-embed"><div class="v-ph"><div class="v-play">▶</div></div></div><div class="v-cap">Video Placeholder 3</div></div>
-    </div>
+    <div class="v-grid" id="videoGrid"></div>
     <div class="yt-link rv d4"><a href="https://www.youtube.com/@YoulityBigbandBln" target="_blank" class="pill">Alle Videos auf YouTube →</a></div>
   </div>
 </section>
@@ -697,7 +693,7 @@ function esc(s) {
 }
 
 async function loadSiteData() {
-  await Promise.all([loadConcerts(), loadMembers(), loadHistory(), loadContent()]);
+  await Promise.all([loadConcerts(), loadMembers(), loadHistory(), loadContent(), loadVideos()]);
   // re-trigger reveal observer for newly added elements
   document.querySelectorAll('.rv:not(.on)').forEach(el => obs.observe(el));
 }
@@ -801,6 +797,26 @@ async function loadContent() {
     const el = document.querySelector(`#rep-${k} .rep-text`);
     if (el && map[`rep_${k}`]) el.textContent = map[`rep_${k}`];
   });
+}
+
+async function loadVideos() {
+  const el = document.getElementById('videoGrid');
+  if (!el) return;
+  const data = await sbFetch('/rest/v1/videos?order=sort_order.asc,created_at.asc&select=*');
+  if (!data || !data.length) {
+    el.innerHTML = '<div class="v-wrap" style="grid-column:1/-1"><div class="v-embed"><div class="v-ph"><div class="v-play">▶</div></div></div><div class="v-cap">Videos folgen bald</div></div>';
+    return;
+  }
+  const delays = ['d1','d2','d3','d4','d5','d6'];
+  el.innerHTML = data.map((v, i) => `
+    <div class="v-wrap rv ${delays[i % 6]}">
+      <div class="v-embed">
+        <iframe src="https://www.youtube.com/embed/${v.youtube_id}"
+                allowfullscreen allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture"
+                loading="lazy"></iframe>
+      </div>
+      <div class="v-cap">${esc(v.title)}</div>
+    </div>`).join('');
 }
 
 // Kick off after page loads
