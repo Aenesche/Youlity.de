@@ -631,7 +631,7 @@
     return m + ":" + String(r).padStart(2, "0");
   }
   // ---- Tonarm ----
-  const ARM_OFF = -28;                          // abgehoben (Ruheposition)
+  const ARM_OFF = -34;                          // abgehoben (Ruheposition)
   const ARM_DROP_MS = 950;                       // muss zur CSS-Transition passen (0.9s)
   const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const armAngle = (p) => 8 + p * 0.18;          // 8° aussen → ~26° innen
