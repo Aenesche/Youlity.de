@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
-<title>Bonustrack – Youlity</title>
+<title>Bonustrack - Youlity</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
@@ -344,6 +344,7 @@
     transition: transform 0.15s ease, filter 0.2s ease;
   }
   #playBtn:hover { filter: brightness(1.12); transform: scale(1.05); }
+  #playBtn:disabled { opacity: 0.5; cursor: wait; transform: none; filter: none; }
   #playBtn svg { width: 20px; height: 20px; fill: currentColor; }
 
   .progress-area { flex: 1; }
@@ -478,12 +479,12 @@
     </div>
   </div>
 
-  <audio id="audio" preload="metadata"></audio>
+  <audio id="audio" preload="metadata" controlsList="nodownload noplaybackrate"></audio>
 </main>
 
 <footer>
   <a href="/">← youlity.de</a>
-  <span style="opacity:0.4; margin-left:0.6rem;">V5.0</span>
+  <span style="opacity:0.4; margin-left:0.6rem;">V6.0</span>
 </footer>
 
 <script>
@@ -545,15 +546,38 @@
     return data;
   }
 
-  function unlock(url) {
+  let currentObjectUrl = null;
+  async function loadBlob(url) {
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error("load");
+    const blob = await resp.blob();
+    if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
+    currentObjectUrl = URL.createObjectURL(blob);   // src zeigt nur noch auf blob:, nicht auf Supabase
+    audio.src = currentObjectUrl;
+  }
+
+  async function unlock(url, silent) {
     if (!url) {                       // Sicherheitsnetz: ohne gültige URL nichts ausblenden
+      if (silent) { localStorage.removeItem("yl-code"); return; }
       showForm();
       showError("Etwas ist schiefgelaufen. Versuch es nochmal.");
       return;
     }
-    audio.src = url;
+    // direkt in die Player-Ansicht wechseln und währenddessen laden
     card.classList.add("is-player");
     deck.classList.add("unlocked");
+    playBtn.disabled = true;
+    playerMsg.classList.remove("error");
+    playerMsg.textContent = "Track wird geladen …";
+    try {
+      await loadBlob(url);
+      playerMsg.textContent = "";
+      playBtn.disabled = false;
+    } catch {
+      if (silent) { showForm(); localStorage.removeItem("yl-code"); return; }
+      showForm();
+      showError("Der Track lässt sich gerade nicht laden. Lade die Seite neu oder versuch es später nochmal.");
+    }
   }
 
   function showForm() {               // zurück zur Code-Eingabe (Karte nie "leer" lassen)
@@ -570,7 +594,7 @@
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const raw = codeInput.value.replace(/[^A-Za-z0-9]/g, "");
-    if (raw.length < 7) {
+    if (raw.length < 6) {
       showError("Bitte gib deinen vollständigen Code ein.");
       return;
     }
@@ -580,7 +604,7 @@
     try {
       const data = await redeem(raw, emailInput.value.trim(), newsletterInput.checked);
       localStorage.setItem("yl-code", raw);
-      unlock(data.url);
+      await unlock(data.url, false);
     } catch (err) {
       showError(err.message);
     } finally {
@@ -593,11 +617,14 @@
   const savedCode = localStorage.getItem("yl-code");
   if (savedCode) {
     redeem(savedCode, null, false)
-      .then(d => unlock(d.url))
+      .then(d => unlock(d.url, true))
       .catch(() => localStorage.removeItem("yl-code"));
   }
 
   // ===== Player =====
+  // Rechtsklick-/Download-Menü auf dem Audio-Element unterbinden
+  audio.addEventListener("contextmenu", (e) => e.preventDefault());
+
   function fmt(s) {
     if (!isFinite(s)) return "–:––";
     const m = Math.floor(s / 60), r = Math.floor(s % 60);
