@@ -224,6 +224,464 @@
     <button class="tab" data-tab="about">Über uns</button>
     <button class="tab" data-tab="repertoire">Repertoire</button>
     <button class="tab" data-tab="videos">Videos</button>
+    <button class="tab" data-tab="products">Merch</button>
+  </div>
+
+  <!-- KONZERTE -->
+  <div class="content pane active" id="pane-concerts">
+    <div class="section-title">Konzerte</div>
+    <div class="section-sub">Termine hinzufügen, bearbeiten, löschen</div>
+
+    <div class="form-box">
+      <h3>Neuer Termin</h3>
+      <div class="form-grid three">
+        <div class="field">
+          <label>Datum (Sortierung)</label>
+          <input type="date" id="c-date"/>
+        </div>
+        <div class="field">
+          <label>Anzeige-Datum (z.B. "5–7")</label>
+          <input type="text" id="c-date-display" placeholder="22"/>
+        </div>
+        <div class="field">
+          <label>Monat Jahr (z.B. "Jul 2026")</label>
+          <input type="text" id="c-month-year" placeholder="Jul 2026"/>
+        </div>
+        <div class="field span2">
+          <label>Venue / Veranstaltungsort</label>
+          <input type="text" id="c-venue" placeholder="Konzerthaus Berlin"/>
+        </div>
+        <div class="field">
+          <label>Stadt</label>
+          <input type="text" id="c-city" placeholder="Berlin"/>
+        </div>
+        <div class="field">
+          <label>Ticket-URL (optional)</label>
+          <input type="url" id="c-url" placeholder="https://..."/>
+        </div>
+        <div class="field">
+          <label>Button-Text</label>
+          <input type="text" id="c-label" placeholder="Tickets"/>
+        </div>
+        <div class="field">
+          <label>Status</label>
+          <select id="c-status">
+            <option value="upcoming">Kommend</option>
+            <option value="past">Vergangen</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn primary" onclick="addConcert()">Termin hinzufügen</button>
+        <button class="btn" onclick="clearConcertForm()">Felder leeren</button>
+      </div>
+    </div>
+
+    <div id="concertList"><div class="empty">Lade Termine… <span class="spin"></span></div></div>
+  </div>
+
+  <!-- MITGLIEDER -->
+  <div class="content pane" id="pane-members">
+    <div class="section-title">Mitglieder</div>
+    <div class="section-sub">Bandmitglieder verwalten</div>
+
+    <div class="form-box">
+      <h3 id="memberFormTitle">Neues Mitglied</h3>
+      <input type="hidden" id="m-editing-id" value=""/>
+      <div class="form-grid">
+        <div class="field">
+          <label>Name</label>
+          <input type="text" id="m-name" placeholder="Anna Knöppler"/>
+        </div>
+        <div class="field">
+          <label>Instrument / Rolle</label>
+          <input type="text" id="m-inst" placeholder="Alt-Saxophon"/>
+        </div>
+        <div class="field span2">
+          <label>Bio (optional)</label>
+          <textarea id="m-bio" placeholder="Kurze Beschreibung…"></textarea>
+        </div>
+        <div class="field">
+          <label>Reihenfolge (Zahl)</label>
+          <input type="text" id="m-order" placeholder="0"/>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn primary" id="memberSaveBtn" onclick="addMember()">Mitglied hinzufügen</button>
+        <button class="btn" onclick="clearMemberForm()">Felder leeren</button>
+        <button class="btn danger" id="memberCancelBtn" style="display:none" onclick="cancelMemberEdit()">Abbrechen</button>
+      </div>
+    </div>
+
+    <div id="memberList"><div class="empty">Lade Mitglieder… <span class="spin"></span></div></div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="content pane" id="pane-history">
+    <div class="section-title">Auftritte & Preise</div>
+    <div class="section-sub">Vergangene Highlights und Auszeichnungen</div>
+
+    <div class="form-box">
+      <h3>Neuer Eintrag</h3>
+      <div class="form-grid">
+        <div class="field">
+          <label>Jahr</label>
+          <input type="text" id="h-year" placeholder="2024"/>
+        </div>
+        <div class="field">
+          <label>Event</label>
+          <input type="text" id="h-event" placeholder="Jazztreff Berlin"/>
+        </div>
+        <div class="field">
+          <label>Ort · Stadt</label>
+          <input type="text" id="h-place" placeholder="Konzerthaus · Berlin"/>
+        </div>
+        <div class="field">
+          <label>Auszeichnung (optional)</label>
+          <input type="text" id="h-award" placeholder="1. Platz"/>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn primary" onclick="addHistory()">Eintrag hinzufügen</button>
+        <button class="btn" onclick="clearHistoryForm()">Felder leeren</button>
+      </div>
+    </div>
+
+    <div id="historyList"><div class="empty">Lade Einträge… <span class="spin"></span></div></div>
+  </div>
+
+  <!-- ÜBER UNS -->
+  <div class="content pane" id="pane-about">
+    <div class="section-title">Über uns</div>
+    <div class="section-sub">Freitext für die About-Sektion</div>
+
+    <div class="form-box">
+      <h3>Text bearbeiten</h3>
+      <div class="form-grid one">
+        <div class="field">
+          <label>Haupttext (Absatz 1)</label>
+          <textarea class="big-text" id="about-p1"></textarea>
+        </div>
+        <div class="field">
+          <label>Haupttext (Absatz 2, optional)</label>
+          <textarea class="big-text" id="about-p2"></textarea>
+        </div>
+        <div class="field">
+          <label>Mitglieder-Anzahl (Stat)</label>
+          <input type="text" id="about-count" placeholder="~15+"/>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn primary" onclick="saveAbout()">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REPERTOIRE -->
+  <div class="content pane" id="pane-repertoire">
+    <div class="section-title">Repertoire</div>
+    <div class="section-sub">Texte für die vier Kategorien</div>
+
+    <div class="form-box">
+      <h3>Texte bearbeiten</h3>
+      <div class="form-grid one">
+        <div class="field">
+          <label>Jazz</label>
+          <textarea class="big-text" id="rep-jazz"></textarea>
+        </div>
+        <div class="field">
+          <label>Funk & Soul</label>
+          <textarea class="big-text" id="rep-funk"></textarea>
+        </div>
+        <div class="field">
+          <label>Electronic</label>
+          <textarea class="big-text" id="rep-electronic"></textarea>
+        </div>
+        <div class="field">
+          <label>Eigene Stücke</label>
+          <textarea class="big-text" id="rep-original"></textarea>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn primary" onclick="saveRepertoire()">Alle speichern</button>
+      </div>
+    </div>
+  </div>
+</div>
+  <!-- MERCH / PRODUKTE -->
+  <div class="content pane" id="pane-products">
+    <div class="section-title">Merch</div>
+    <div class="section-sub">Produkte für den Shop (youlity.de/shop) verwalten</div>
+
+    <div class="form-box">
+      <h3 id="productFormTitle">Neues Produkt</h3>
+      <input type="hidden" id="p-editing-id" value=""/>
+      <input type="hidden" id="p-current-image" value=""/>
+      <div class="form-grid">
+        <div class="field">
+          <label>Name</label>
+          <input type="text" id="p-name" placeholder="Youlity T-Shirt"/>
+        </div>
+        <div class="field">
+          <label>Preis in € (z.B. 25,00)</label>
+          <input type="text" id="p-price" placeholder="25,00"/>
+        </div>
+        <div class="field">
+          <label>Größen (Komma-getrennt, leer = keine)</label>
+          <input type="text" id="p-sizes" placeholder="S, M, L, XL"/>
+        </div>
+        <div class="field">
+          <label>Bestand (leer = unbegrenzt)</label>
+          <input type="text" id="p-stock" placeholder=""/>
+        </div>
+        <div class="field span2">
+          <label>Beschreibung (optional)</label>
+          <textarea id="p-desc" placeholder="Bio-Baumwolle, Siebdruck…"></textarea>
+        </div>
+        <div class="field">
+          <label>Produktbild (JPG/PNG/WebP)</label>
+          <input type="file" id="p-image" accept="image/*" style="background:#050510;color:var(--muted);border:1px solid var(--border);padding:.5rem;font-family:'Space Mono',monospace;font-size:.6rem;"/>
+        </div>
+        <div class="field">
+          <label>Reihenfolge (Zahl)</label>
+          <input type="text" id="p-order" placeholder="0"/>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn primary" id="productSaveBtn" onclick="saveProduct()">Produkt hinzufügen</button>
+        <button class="btn" onclick="clearProductForm()">Felder leeren</button>
+        <button class="btn danger" id="productCancelBtn" style="display:none" onclick="clearProductForm()">Abbrechen</button>
+      </div>
+    </div>
+
+    <div id="productList"><div class="empty">Lade Produkte… <span class="spin"></span></div></div>
+  </div>
+
+  <!-- VIDEOS -->
+  <div class="content pane" id="pane-videos">
+    <div class="section-title">Videos</div>
+    <div class="section-sub">YouTube-Links verwalten — einfach URL einfügen</div>
+    <div class="form-box">
+      <h3>Neues Video</h3>
+      <div class="form-grid">
+        <div class="field span2">
+          <label>YouTube-URL (z.B. youtube.com/watch?v=... oder youtu.be/...)</label>
+          <input type="text" id="v-url" placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"/>
+        </div>
+        <div class="field">
+          <label>Titel</label>
+          <input type="text" id="v-title" placeholder="Konzert 2024 – Shofukan"/>
+        </div>
+        <div class="field">
+          <label>Reihenfolge</label>
+          <input type="text" id="v-order" placeholder="0"/>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn primary" onclick="addVideo()">Video hinzufügen</button>
+      </div>
+    </div>
+    <div id="videoList"><div class="empty">Lade Videos… <span class="spin"></span></div></div>
+  </div>
+
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+
+const SB_URL  = 'https://hmopcvtzhcevouwmdwxa.supabase.co';
+const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6Ik    /* ── SHARED BUTTON ── */
+    .btn{
+      font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;
+      padding:.6rem 1.2rem;border:1px solid var(--border);background:none;color:var(--muted);
+      cursor:pointer;transition:all .2s;
+    }
+    .btn:hover{border-color:var(--pink);color:var(--pink);background:var(--pink-glow);}
+    .btn.primary{border-color:var(--pink);color:var(--pink);background:var(--pink-glow);}
+    .btn.primary:hover{background:rgba(237,36,200,0.2);}
+    .btn.danger{border-color:var(--red);color:var(--red);}
+    .btn.danger:hover{background:rgba(231,76,60,0.1);}
+    .btn.success{border-color:var(--green);color:var(--green);}
+    .btn.success:hover{background:rgba(46,204,113,0.1);}
+    .btn.full{width:100%;}
+
+    /* ── LAYOUT ── */
+    #app{display:none;min-height:100vh;}
+
+    header{
+      position:sticky;top:0;z-index:50;
+      background:rgba(7,5,15,.95);backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;
+      padding:.9rem 2rem;
+    }
+    .header-left{display:flex;align-items:center;gap:1.5rem;}
+    .logo{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.12em;color:var(--text);}
+    .logo span{color:var(--pink);}
+    .user-tag{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.15em;color:var(--muted);}
+
+    /* ── TABS ── */
+    .tabs{
+      display:flex;gap:0;border-bottom:1px solid var(--border);
+      padding:0 2rem;overflow-x:auto;
+    }
+    .tab{
+      font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;
+      padding:.9rem 1.4rem;border:none;background:none;color:var(--muted);cursor:pointer;
+      border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s;
+    }
+    .tab:hover{color:var(--text);}
+    .tab.active{color:var(--pink);border-bottom-color:var(--pink);}
+
+    /* ── MAIN CONTENT ── */
+    .content{max-width:900px;margin:0 auto;padding:2.5rem 2rem;}
+
+    .section-title{
+      font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:.06em;
+      color:var(--text);margin-bottom:.4rem;
+    }
+    .section-sub{
+      font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.2em;
+      color:var(--muted);text-transform:uppercase;margin-bottom:2rem;
+    }
+
+    /* ── FORM ── */
+    .form-box{
+      border:1px solid var(--border);background:var(--surface);
+      padding:1.8rem;margin-bottom:2rem;
+    }
+    .form-box h3{
+      font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.22em;
+      color:var(--pink);text-transform:uppercase;margin-bottom:1.2rem;
+    }
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;}
+    .form-grid.three{grid-template-columns:1fr 1fr 1fr;}
+    .form-grid.one{grid-template-columns:1fr;}
+    @media(max-width:600px){.form-grid,.form-grid.three{grid-template-columns:1fr;}}
+
+    .field{display:flex;flex-direction:column;gap:.4rem;}
+    .field.span2{grid-column:span 2;}
+    .field.span3{grid-column:span 3;}
+    @media(max-width:600px){.field.span2,.field.span3{grid-column:span 1;}}
+
+    label{
+      font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.18em;
+      color:var(--muted);text-transform:uppercase;
+    }
+    input[type="text"],input[type="date"],input[type="email"],input[type="url"],
+    input[type="password"],textarea,select{
+      background:#050510;color:var(--text);border:1px solid var(--border);
+      padding:.6rem .9rem;font-family:'DM Sans',sans-serif;font-size:.9rem;
+      outline:none;transition:border-color .2s;width:100%;
+    }
+    input:focus,textarea:focus,select:focus{border-color:var(--pink);}
+    textarea{resize:vertical;min-height:90px;line-height:1.6;}
+    select option{background:var(--bg);}
+
+    .form-actions{display:flex;gap:.75rem;margin-top:1.2rem;flex-wrap:wrap;}
+
+    /* ── LIST ITEMS ── */
+    .item-list{display:flex;flex-direction:column;gap:1px;background:var(--border);}
+    .item{
+      background:var(--bg);padding:1.1rem 1.4rem;
+      display:flex;align-items:center;justify-content:space-between;gap:1rem;
+      transition:background .2s;
+    }
+    .item:hover{background:var(--surface);}
+    .item-info{flex:1;min-width:0;}
+    .item-main{font-size:.95rem;font-weight:500;color:var(--text);margin-bottom:.2rem;}
+    .item-meta{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.1em;color:var(--muted);}
+    .item-badge{
+      font-family:'Space Mono',monospace;font-size:.48rem;letter-spacing:.14em;text-transform:uppercase;
+      padding:.25rem .6rem;border:1px solid;white-space:nowrap;
+    }
+    .badge-up{border-color:var(--green);color:var(--green);}
+    .badge-past{border-color:var(--muted);color:var(--muted);}
+    .item-actions{display:flex;gap:.5rem;flex-shrink:0;}
+
+    /* ── EMPTY STATE ── */
+    .empty{
+      padding:3rem;text-align:center;border:1px dashed var(--border);
+      font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.2em;
+      color:var(--muted);text-transform:uppercase;
+    }
+
+    /* ── TOAST ── */
+    #toast{
+      position:fixed;bottom:2rem;right:2rem;z-index:9999;
+      font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.15em;
+      padding:.8rem 1.4rem;border:1px solid;
+      transform:translateY(4rem);opacity:0;transition:all .3s;pointer-events:none;
+    }
+    #toast.show{transform:translateY(0);opacity:1;}
+    #toast.ok{border-color:var(--green);color:var(--green);background:rgba(46,204,113,.08);}
+    #toast.err{border-color:var(--red);color:var(--red);background:rgba(231,76,60,.08);}
+
+    /* ── SPINNER ── */
+    .spin{
+      display:inline-block;width:14px;height:14px;
+      border:2px solid var(--border);border-top-color:var(--pink);
+      border-radius:50%;animation:rot .7s linear infinite;vertical-align:middle;
+    }
+    @keyframes rot{to{transform:rotate(360deg);}}
+
+    /* ── TEXTAREA LARGE ── */
+    .big-text{min-height:160px;}
+
+    /* ── PANEL ── */
+    .pane{display:none;}
+    .pane.active{display:block;}
+  </style>
+</head>
+<body>
+
+<!-- Passwort setzen nach Invite -->
+<div id="setPwScreen" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:10000;justify-content:center;align-items:center;">
+  <div class="login-box">
+    <h1>Passwort <span style="color:var(--pink)">setzen</span></h1>
+    <p>Wähle dein Passwort für den Admin-Zugang</p>
+    <input type="password" id="newPw" placeholder="Neues Passwort (mind. 6 Zeichen)"/>
+    <input type="password" id="newPw2" placeholder="Passwort wiederholen"/>
+    <div id="setPwErr" style="font-family:'Space Mono',monospace;font-size:.58rem;color:var(--red);margin-bottom:.75rem;display:none;"></div>
+    <button class="btn primary full" onclick="doSetPassword()">Passwort speichern & einloggen</button>
+  </div>
+</div>
+
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <h1>Youlity <span style="color:var(--pink)">Admin</span></h1>
+    <p>Band Management · Secure Area</p>
+    <input type="email" id="loginEmail" placeholder="E-Mail" autocomplete="email"/>
+    <input type="password" id="loginPw" placeholder="Passwort" autocomplete="current-password"/>
+    <div id="loginErr">E-Mail oder Passwort falsch.</div>
+    <button class="btn primary full" onclick="doLogin()">Einloggen</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header>
+    <div class="header-left">
+      <div class="logo">Youlity <span>Admin</span></div>
+      <div class="user-tag" id="userTag">—</div>
+    </div>
+    <div style="display:flex;gap:.75rem;align-items:center;">
+      <a href="index.html" class="btn" target="_blank">← Website</a>
+      <button class="btn danger" onclick="doLogout()">Logout</button>
+    </div>
+  </header>
+
+  <div class="tabs" id="tabBar">
+    <button class="tab active" data-tab="concerts">Konzerte</button>
+    <button class="tab" data-tab="members">Mitglieder</button>
+    <button class="tab" data-tab="history">Auftritte & Preise</button>
+    <button class="tab" data-tab="about">Über uns</button>
+    <button class="tab" data-tab="repertoire">Repertoire</button>
+    <button class="tab" data-tab="videos">Videos</button>
   </div>
 
   <!-- KONZERTE -->
