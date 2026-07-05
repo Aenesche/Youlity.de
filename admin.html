@@ -196,7 +196,7 @@
 <div id="loginScreen">
   <div class="login-box">
     <h1>Youlity <span style="color:var(--pink)">Admin</span></h1>
-    <p>BKein zugriff für unbefugte, LOL.</p>
+    <p>Band Management · Secure Area</p>
     <input type="email" id="loginEmail" placeholder="E-Mail" autocomplete="email"/>
     <input type="password" id="loginPw" placeholder="Passwort" autocomplete="current-password"/>
     <div id="loginErr">E-Mail oder Passwort falsch.</div>
@@ -285,7 +285,8 @@
     <div class="section-sub">Bandmitglieder verwalten</div>
 
     <div class="form-box">
-      <h3>Neues Mitglied</h3>
+      <h3 id="memberFormTitle">Neues Mitglied</h3>
+      <input type="hidden" id="m-editing-id" value=""/>
       <div class="form-grid">
         <div class="field">
           <label>Name</label>
@@ -305,8 +306,9 @@
         </div>
       </div>
       <div class="form-actions">
-        <button class="btn primary" onclick="addMember()">Mitglied hinzufügen</button>
+        <button class="btn primary" id="memberSaveBtn" onclick="addMember()">Mitglied hinzufügen</button>
         <button class="btn" onclick="clearMemberForm()">Felder leeren</button>
+        <button class="btn danger" id="memberCancelBtn" style="display:none" onclick="cancelMemberEdit()">Abbrechen</button>
       </div>
     </div>
 
@@ -673,10 +675,13 @@ function clearConcertForm() {
 }
 
 // ── MEMBERS ──────────────────────────────────────────────────────────
+let membersCache = [];
+
 async function loadMembers() {
   const el = document.getElementById('memberList');
   try {
     const data = await sb('/rest/v1/members?order=sort_order.asc,created_at.asc&select=*');
+    membersCache = data || [];
     if (!data || !data.length) {
       el.innerHTML = '<div class="empty">Noch keine Mitglieder — füge das erste hinzu ↑</div>';
       return;
@@ -688,6 +693,7 @@ async function loadMembers() {
           <div class="item-meta">${esc(m.instrument)}${m.bio ? ' · '+esc(m.bio).slice(0,60)+'…' : ''}</div>
         </div>
         <div class="item-actions">
+          <button class="btn" onclick="editMember('${m.id}')">Bearbeiten</button>
           <button class="btn danger" onclick="deleteMember('${m.id}')">Löschen</button>
         </div>
       </div>`).join('') + '</div>';
@@ -696,15 +702,39 @@ async function loadMembers() {
   }
 }
 
+function editMember(id) {
+  const m = membersCache.find(x => x.id === id);
+  if (!m) return;
+  document.getElementById('m-name').value  = m.name || '';
+  document.getElementById('m-inst').value  = m.instrument || '';
+  document.getElementById('m-bio').value   = m.bio || '';
+  document.getElementById('m-order').value = m.sort_order ?? 0;
+  document.getElementById('m-editing-id').value = id;
+  document.getElementById('memberFormTitle').textContent = 'Mitglied bearbeiten';
+  document.getElementById('memberSaveBtn').textContent = 'Änderungen speichern';
+  document.getElementById('memberCancelBtn').style.display = 'inline-block';
+  document.querySelector('#pane-members .form-box').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function cancelMemberEdit() {
+  clearMemberForm();
+}
+
 async function addMember() {
   const name       = document.getElementById('m-name').value.trim();
   const instrument = document.getElementById('m-inst').value.trim();
   const bio        = document.getElementById('m-bio').value.trim();
   const sort_order = parseInt(document.getElementById('m-order').value) || 0;
+  const editingId  = document.getElementById('m-editing-id').value;
   if (!name || !instrument) { toast('Name und Instrument sind Pflichtfelder', 'err'); return; }
   try {
-    await sb('/rest/v1/members', 'POST', { name, instrument, bio:bio||null, sort_order });
-    toast('Mitglied gespeichert ✓');
+    if (editingId) {
+      await sb('/rest/v1/members?id=eq.' + editingId, 'PATCH', { name, instrument, bio:bio||null, sort_order });
+      toast('Mitglied aktualisiert ✓');
+    } else {
+      await sb('/rest/v1/members', 'POST', { name, instrument, bio:bio||null, sort_order });
+      toast('Mitglied gespeichert ✓');
+    }
     clearMemberForm();
     loadMembers();
   } catch(e) { toast(e.message, 'err'); }
@@ -721,6 +751,10 @@ async function deleteMember(id) {
 
 function clearMemberForm() {
   ['m-name','m-inst','m-bio','m-order'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('m-editing-id').value = '';
+  document.getElementById('memberFormTitle').textContent = 'Neues Mitglied';
+  document.getElementById('memberSaveBtn').textContent = 'Mitglied hinzufügen';
+  document.getElementById('memberCancelBtn').style.display = 'none';
 }
 
 // ── HISTORY ──────────────────────────────────────────────────────────
