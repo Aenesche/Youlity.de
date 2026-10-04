@@ -358,4 +358,50 @@ async function checkout() {
   if (!cart.length) return;
   const btn = document.getElementById('checkoutBtn');
   const err = document.getElementById('cartErr');
-  
+  err.classList.remove('show');
+  btn.disabled = true;
+  btn.textContent = 'Einen Moment…';
+  try {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/checkout`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON,
+        'Authorization': 'Bearer ' + SUPABASE_ANON
+      },
+      body: JSON.stringify({ items: cart.map(i => ({ id: i.id, quantity: i.qty, size: i.size || undefined })) })
+    });
+    const data = await res.json();
+    if (data.ok && data.url) { window.location.href = data.url; return; }
+    err.textContent = ERR_MSG[data.error] || 'Checkout fehlgeschlagen — bitte versuche es später erneut.';
+    err.classList.add('show');
+  } catch {
+    err.textContent = 'Verbindung fehlgeschlagen — bitte prüfe dein Internet und versuche es erneut.';
+    err.classList.add('show');
+  }
+  btn.disabled = false;
+  btn.textContent = 'Zur Kasse';
+}
+
+// ── STATUS-BANNER (Rückkehr von Stripe) ──────────────────────────────
+(function () {
+  const status = new URLSearchParams(location.search).get('status');
+  if (!status) return;
+  const banner = document.getElementById('banner');
+  if (status === 'success') {
+    banner.innerHTML = '<strong>Danke für deine Bestellung!</strong> Du bekommst in Kürze eine Bestätigung per E-Mail.';
+    banner.classList.add('show', 'ok');
+    localStorage.removeItem('youlity-cart');
+  } else if (status === 'cancel') {
+    banner.innerHTML = '<strong>Bestellung abgebrochen.</strong> Dein Warenkorb ist noch da, falls du es dir anders überlegst.';
+    banner.classList.add('show');
+  }
+  history.replaceState(null, '', location.pathname);
+})();
+
+// ── INIT ─────────────────────────────────────────────────────────────
+loadProducts().then(renderCart);
+</script>
+</body>
+</html>
+
