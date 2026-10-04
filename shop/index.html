@@ -183,7 +183,7 @@
   <div class="cart-items" id="cartItems"></div>
   <div class="cart-foot">
     <div class="cart-total"><span>Zwischensumme</span><strong id="cartTotal">0,00 €</strong></div>
-    <div class="cart-hint">Versandkosten werden im nächsten Schritt berechnet.<br>Versand nach DE · AT · CH.</div>
+    <div class="cart-hint">Versand &amp; Verpackung wird im nächsten Schritt berechnet.<br>Versand nach Deutschland &amp; Österreich.</div>
     <div class="cart-err" id="cartErr"></div>
     <button class="checkout-btn" id="checkoutBtn" onclick="checkout()">Zur Kasse</button>
   </div>
@@ -231,6 +231,35 @@ function fmtPrice(cents) {
 // ── PRODUKTE ─────────────────────────────────────────────────────────
 let products = [];
 
+// Verfügbarer Bestand (null = unbegrenzt).
+// Produkte mit Größen nutzen stock_by_size, alle anderen stock.
+function stockOf(p, size) {
+  if (p.sizes && p.sizes.length) {
+    if (!p.stock_by_size) return null;
+    const v = p.stock_by_size[size];
+    return v === undefined || v === null ? null : Number(v);
+  }
+  return p.stock === null || p.stock === undefined ? null : Number(p.stock);
+}
+
+function isSoldOut(p) {
+  if (p.sizes && p.sizes.length) {
+    if (!p.stock_by_size) return false;
+    return p.sizes.every(s => {
+      const v = stockOf(p, s);
+      return v !== null && v <= 0;
+    });
+  }
+  const v = stockOf(p);
+  return v !== null && v <= 0;
+}
+
+// Wie viel von dieser Variante liegt schon im Warenkorb?
+function inCart(id, size) {
+  const found = getCart().find(i => i.id === id && i.size === (size || ''));
+  return found ? found.qty : 0;
+}
+
 async function loadProducts() {
   const grid = document.getElementById('productGrid');
   try {
@@ -246,12 +275,18 @@ async function loadProducts() {
   }
   const delays = ['d1','d2','d3','d4','d5','d6'];
   grid.innerHTML = products.map((p, i) => {
-    const soldOut = p.stock !== null && p.stock <= 0;
+    const soldOut = isSoldOut(p);
     const img = p.image_url
       ? `<img src="${esc(p.image_url)}" alt="${esc(p.name)}" loading="lazy">`
       : '♩';
     const sizeSel = (p.sizes && p.sizes.length)
-      ? `<select class="mc-size" id="size-${p.id}"><option value="">Größe wählen…</option>${p.sizes.map(s => `<option>${esc(s)}</option>`).join('')}</select>`
+      ? `<select class="mc-size" id="size-${p.id}"><option value="">Größe wählen…</option>${
+          p.sizes.map(s => {
+            const v = stockOf(p, s);
+            const out = v !== null && v <= 0;
+            return `<option value="${esc(s)}"${out ? ' disabled' : ''}>${esc(s)}${out ? ' — ausverkauft' : ''}</option>`;
+          }).join('')
+        }</select>`
       : '';
     return `
     <div class="mc rv ${delays[i % 6]}">
@@ -260,7 +295,7 @@ async function loadProducts() {
         <div class="mc-name">${esc(p.name)}</div>
         <div class="mc-price">${fmtPrice(p.price_cents)}</div>
         ${p.description ? `<div class="mc-desc">${esc(p.description)}</div>` : ''}
-        ${sizeSel}
+        ${soldOut ? '' : sizeSel}
         <button class="mc-add" onclick="addToCart('${p.id}')" ${soldOut ? 'disabled' : ''}>${soldOut ? 'Ausverkauft' : 'In den Warenkorb'}</button>
       </div>
     </div>`;
@@ -280,6 +315,11 @@ function addToCart(id) {
     size = document.getElementById('size-' + id).value;
     if (!size) { document.getElementById('size-' + id).focus(); return; }
   }
+  const max = stockOf(p, size);
+  if (max !== null && inCart(id, size) >= max) {
+    toastCart(max <= 0 ? 'Leider ausverkauft.' : `Mehr als ${max} haben wir davon nicht da.`);
+    return;
+  }
   const cart = getCart();
   const found = cart.find(i => i.id === id && i.size === size);
   if (found) found.qty = Math.min(20, found.qty + 1);
@@ -291,6 +331,12 @@ function addToCart(id) {
 function changeQty(idx, delta) {
   const cart = getCart();
   if (!cart[idx]) return;
+  const p = products.find(x => x.id === cart[idx].id);
+  const max = p ? stockOf(p, cart[idx].size) : null;
+  if (delta > 0 && max !== null && cart[idx].qty >= max) {
+    toastCart(`Mehr als ${max} haben wir davon nicht da.`);
+    return;
+  }
   cart[idx].qty += delta;
   if (cart[idx].qty <= 0) cart.splice(idx, 1);
   setCart(cart);
@@ -345,6 +391,17 @@ function renderCart() {
 function openCart()  { document.getElementById('cart').classList.add('open'); document.getElementById('cartOverlay').classList.add('open'); }
 function closeCart() { document.getElementById('cart').classList.remove('open'); document.getElementById('cartOverlay').classList.remove('open'); }
 
+// Kurze Meldung im Warenkorb (Bestandsgrenze o.ä.)
+let toastTimer;
+function toastCart(msg) {
+  const err = document.getElementById('cartErr');
+  err.textContent = msg;
+  err.classList.add('show');
+  openCart();
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => err.classList.remove('show'), 4000);
+}
+
 // ── CHECKOUT ─────────────────────────────────────────────────────────
 const ERR_MSG = {
   stripe_not_configured: 'Der Shop ist noch nicht freigeschaltet — bitte versuche es später erneut.',
@@ -373,7 +430,15 @@ async function checkout() {
     });
     const data = await res.json();
     if (data.ok && data.url) { window.location.href = data.url; return; }
-    err.textContent = ERR_MSG[data.error] || 'Checkout fehlgeschlagen — bitte versuche es später erneut.';
+    if (data.error === 'out_of_stock') {
+      const what = data.product_name + (data.size ? ' (' + data.size + ')' : '');
+      err.textContent = data.available > 0
+        ? `Von „${what}" sind nur noch ${data.available} da — bitte Menge anpassen.`
+        : `„${what}" ist leider ausverkauft.`;
+      loadProducts();
+    } else {
+      err.textContent = ERR_MSG[data.error] || 'Checkout fehlgeschlagen — bitte versuche es später erneut.';
+    }
     err.classList.add('show');
   } catch {
     err.textContent = 'Verbindung fehlgeschlagen — bitte prüfe dein Internet und versuche es erneut.';

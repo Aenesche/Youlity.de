@@ -225,6 +225,7 @@
     <button class="tab" data-tab="repertoire">Repertoire</button>
     <button class="tab" data-tab="videos">Videos</button>
     <button class="tab" data-tab="products">Merch</button>
+    <button class="tab" data-tab="orders">Bestellungen</button>
   </div>
 
   <!-- KONZERTE -->
@@ -428,11 +429,23 @@
         </div>
         <div class="field">
           <label>Größen (Komma-getrennt, leer = keine)</label>
-          <input type="text" id="p-sizes" placeholder="S, M, L, XL"/>
+          <input type="text" id="p-sizes" placeholder="S, M, L, XL" oninput="renderSizeStocks()"/>
         </div>
-        <div class="field">
+        <div class="field" id="p-stock-wrap">
           <label>Bestand (leer = unbegrenzt)</label>
           <input type="text" id="p-stock" placeholder=""/>
+        </div>
+        <div class="field span2" id="p-stock-sizes-wrap" style="display:none">
+          <label>Bestand pro Größe (leer = unbegrenzt)</label>
+          <div id="p-stock-sizes" style="display:flex;flex-wrap:wrap;gap:.6rem;"></div>
+        </div>
+        <div class="field">
+          <label>Versandklasse</label>
+          <select id="p-shipclass" style="background:#050510;color:var(--text);border:1px solid var(--border);padding:.5rem;font-family:'Space Mono',monospace;font-size:.62rem;width:100%;">
+            <option value="brief">Brief (Sticker, Flachware)</option>
+            <option value="paeckchen" selected>Päckchen (T-Shirt, CD)</option>
+            <option value="paket">Paket (Vinyl, Sperriges)</option>
+          </select>
         </div>
         <div class="field span2">
           <label>Beschreibung (optional)</label>
@@ -455,6 +468,21 @@
     </div>
 
     <div id="productList"><div class="empty">Lade Produkte… <span class="spin"></span></div></div>
+  </div>
+
+  <!-- BESTELLUNGEN -->
+  <div class="content pane" id="pane-orders">
+    <div class="section-title">Bestellungen</div>
+    <div class="section-sub">Bezahlte Bestellungen aus dem Shop — Adresse kopieren, verschicken, abhaken</div>
+
+    <div class="form-box" style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;">
+      <button class="btn primary" id="of-open"     onclick="setOrderFilter('paid')">Offen</button>
+      <button class="btn"         id="of-shipped"  onclick="setOrderFilter('shipped')">Versendet</button>
+      <button class="btn"         id="of-all"      onclick="setOrderFilter('all')">Alle</button>
+      <button class="btn" style="margin-left:auto" onclick="loadOrders()">Aktualisieren ↻</button>
+    </div>
+
+    <div id="orderList"><div class="empty">Lade Bestellungen… <span class="spin"></span></div></div>
   </div>
 
   <!-- VIDEOS -->
@@ -663,6 +691,7 @@ async function loadAll() {
   loadContent();
   loadVideos();
   loadProducts();
+  loadOrders();
 }
 
 // ── CONCERTS ─────────────────────────────────────────────────────────
@@ -1048,8 +1077,13 @@ function esc(s) {
 
 // ── PRODUKTE / MERCH ─────────────────────────────────────────────────
 // Tabelle: products (name, description, price_cents, sizes text[], image_url,
-//          stock, sort_order, active) · Storage-Bucket: product-images
+//          stock, stock_by_size jsonb, shipping_class, sort_order, active)
+//          Storage-Bucket: product-images
+// Bestand: Produkte MIT Größen nutzen stock_by_size {"S":5,…},
+//          Produkte OHNE Größen das einfache stock-Feld. null = unbegrenzt.
 let productsCache = [];
+
+const SHIP_LABEL = { brief: 'Brief', paeckchen: 'Päckchen', paket: 'Paket' };
 
 function centsToEuro(c) {
   return (c / 100).toFixed(2).replace('.', ',');
@@ -1057,6 +1091,98 @@ function centsToEuro(c) {
 function euroToCents(s) {
   const n = parseFloat(String(s).replace(',', '.').replace(/[^0-9.]/g, ''));
   return isNaN(n) ? NaN : Math.round(n * 100);
+}
+
+function parseSizes(raw) {
+  return raw ? raw.split(',').map(function(s){ return s.trim(); }).filter(Boolean) : [];
+}
+
+// Baut die Bestand-pro-Größe-Felder passend zum Größen-Input neu auf.
+// Schon eingetippte Werte bleiben erhalten.
+function renderSizeStocks(preset) {
+  const sizes = parseSizes(document.getElementById('p-sizes').value.trim());
+  const box   = document.getElementById('p-stock-sizes');
+  const prev  = {};
+  box.querySelectorAll('input[data-size]').forEach(function(i){ prev[i.dataset.size] = i.value; });
+
+  document.getElementById('p-stock-wrap').style.display       = sizes.length ? 'none' : '';
+  document.getElementById('p-stock-sizes-wrap').style.display = sizes.length ? '' : 'none';
+  if (!sizes.length) { box.innerHTML = ''; return; }
+
+  box.innerHTML = sizes.map(function(s){
+    const v = preset && preset[s] !== undefined && preset[s] !== null
+      ? preset[s]
+      : (prev[s] !== undefined ? prev[s] : '');
+    return '<label style="display:flex;align-items:center;gap:.4rem;font-family:\'Space Mono\',monospace;font-size:.6rem;color:var(--muted)">'
+      + esc(s)
+      + '<input type="number" min="0" data-size="' + esc(s) + '" value="' + esc(String(v))
+      + '" style="width:64px;background:#050510;color:var(--text);border:1px solid var(--border);padding:.35rem;font-family:\'Space Mono\',monospace;font-size:.62rem;"/>'
+      + '</label>';
+  }).join('');
+}
+
+function collectSizeStocks() {
+  const inputs = document.querySelectorAll('#p-stock-sizes input[data-size]');
+  if (!inputs.length) return null;
+  const out = {};
+  let any = false;
+  inputs.forEach(function(i){
+    if (i.value.trim() !== '') { out[i.dataset.size] = Math.max(0, parseInt(i.value) || 0); any = true; }
+  });
+  return any ? out : null;
+}
+
+// Bestandsanzeige + Schnell-Bearbeitung in der Produktliste
+function stockEditor(p) {
+  const style = 'width:56px;background:#050510;color:var(--text);border:1px solid var(--border);'
+              + 'padding:.25rem;font-family:\'Space Mono\',monospace;font-size:.6rem;';
+  if (p.sizes && p.sizes.length) {
+    if (!p.stock_by_size) {
+      return '<span style="font-family:\'Space Mono\',monospace;font-size:.55rem;color:var(--muted)">Bestand: unbegrenzt</span>';
+    }
+    return p.sizes.map(function(s){
+      const v = p.stock_by_size[s];
+      return '<label style="display:inline-flex;align-items:center;gap:.3rem;margin-right:.5rem;font-family:\'Space Mono\',monospace;font-size:.55rem;color:var(--muted)">'
+        + esc(s)
+        + '<input type="number" min="0" value="' + esc(String(v === undefined || v === null ? '' : v))
+        + '" style="' + style + '" onchange="quickStock(\'' + p.id + '\',\'' + esc(s) + '\',this)"/>'
+        + '</label>';
+    }).join('');
+  }
+  if (p.stock === null || p.stock === undefined) {
+    return '<span style="font-family:\'Space Mono\',monospace;font-size:.55rem;color:var(--muted)">Bestand: unbegrenzt</span>';
+  }
+  return '<label style="display:inline-flex;align-items:center;gap:.3rem;font-family:\'Space Mono\',monospace;font-size:.55rem;color:var(--muted)">Bestand'
+    + '<input type="number" min="0" value="' + p.stock + '" style="' + style
+    + '" onchange="quickStock(\'' + p.id + '\',null,this)"/></label>';
+}
+
+// Direkt aus der Liste speichern — ohne Umweg übers Formular
+async function quickStock(id, size, input) {
+  const p = productsCache.find(function(x){ return x.id === id; });
+  if (!p) return;
+  const val = input.value.trim() === '' ? 0 : Math.max(0, parseInt(input.value) || 0);
+  input.value = val;
+  input.disabled = true;
+  try {
+    let payload;
+    if (size) {
+      const next = Object.assign({}, p.stock_by_size || {});
+      next[size] = val;
+      payload = { stock_by_size: next };
+      p.stock_by_size = next;
+    } else {
+      payload = { stock: val };
+      p.stock = val;
+    }
+    await sb('/rest/v1/products?id=eq.' + id, 'PATCH', payload);
+    toast('Bestand gespeichert ✓');
+  } catch(e) {
+    toast(e.message, 'err');
+    loadProducts();
+  } finally {
+    input.disabled = false;
+  }
 }
 
 async function loadProducts() {
@@ -1076,7 +1202,8 @@ async function loadProducts() {
           : `<div style="width:56px;height:56px;border:1px dashed var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.5rem;color:var(--muted);text-align:center;">kein Bild</div>`}
         <div class="item-info">
           <div class="item-main">${esc(p.name)}</div>
-          <div class="item-meta">${centsToEuro(p.price_cents)} €${p.sizes && p.sizes.length ? ' · ' + p.sizes.map(esc).join(', ') : ''}${(p.stock === null || p.stock === undefined) ? '' : ' · Bestand: ' + p.stock}</div>
+          <div class="item-meta">${centsToEuro(p.price_cents)} €${p.sizes && p.sizes.length ? ' · ' + p.sizes.map(esc).join(', ') : ''} · ${esc(SHIP_LABEL[p.shipping_class] || p.shipping_class || '—')}</div>
+          <div style="margin-top:.4rem">${stockEditor(p)}</div>
         </div>
         <span class="item-badge ${p.active ? 'badge-up' : 'badge-past'}">${p.active ? 'Sichtbar' : 'Versteckt'}</span>
         <div class="item-actions">
@@ -1127,6 +1254,8 @@ async function saveProduct() {
 
   const sizes = sizesRaw ? sizesRaw.split(',').map(function(s){ return s.trim(); }).filter(Boolean) : null;
   const stock = stockRaw === '' ? null : (parseInt(stockRaw) || 0);
+  const stock_by_size = sizes && sizes.length ? collectSizeStocks() : null;
+  const shipping_class = document.getElementById('p-shipclass').value || 'paeckchen';
 
   const oldLabel = btn.textContent;
   btn.disabled = true;
@@ -1137,7 +1266,11 @@ async function saveProduct() {
       image_url = await uploadProductImage(fileInput.files[0]);
     }
     const payload = { name: name, description: description || null, price_cents: price_cents,
-                      sizes: sizes, image_url: image_url, stock: stock, sort_order: sort_order };
+                      sizes: sizes, image_url: image_url,
+                      stock: sizes && sizes.length ? null : stock,
+                      stock_by_size: stock_by_size,
+                      shipping_class: shipping_class,
+                      sort_order: sort_order };
     if (editingId) {
       await sb('/rest/v1/products?id=eq.' + editingId, 'PATCH', payload);
       toast('Produkt aktualisiert ✓');
@@ -1163,6 +1296,8 @@ function editProduct(id) {
   document.getElementById('p-price').value = centsToEuro(p.price_cents);
   document.getElementById('p-sizes').value = (p.sizes || []).join(', ');
   document.getElementById('p-stock').value = (p.stock === null || p.stock === undefined) ? '' : p.stock;
+  document.getElementById('p-shipclass').value = p.shipping_class || 'paeckchen';
+  renderSizeStocks(p.stock_by_size || {});
   document.getElementById('p-desc').value  = p.description || '';
   document.getElementById('p-order').value = (p.sort_order === null || p.sort_order === undefined) ? 0 : p.sort_order;
   document.getElementById('p-current-image').value = p.image_url || '';
@@ -1177,6 +1312,9 @@ function editProduct(id) {
 function clearProductForm() {
   ['p-name','p-price','p-sizes','p-stock','p-desc','p-order','p-current-image','p-editing-id','p-image']
     .forEach(function(id){ const el = document.getElementById(id); if (el) el.value = ''; });
+  document.getElementById('p-shipclass').value = 'paeckchen';
+  document.getElementById('p-stock-sizes').innerHTML = '';
+  renderSizeStocks();
   document.getElementById('productFormTitle').textContent = 'Neues Produkt';
   document.getElementById('productSaveBtn').textContent   = 'Produkt hinzufügen';
   document.getElementById('productCancelBtn').style.display = 'none';
@@ -1198,6 +1336,106 @@ async function deleteProduct(id) {
     await sb('/rest/v1/products?id=eq.' + id, 'DELETE');
     toast('Produkt gelöscht');
     loadProducts();
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+// ── BESTELLUNGEN ─────────────────────────────────────────────────────
+// Tabelle: orders — wird vom Stripe-Webhook befüllt.
+// 'pending' = Checkout gestartet, aber nie bezahlt → wird nicht angezeigt.
+let orderFilter = 'paid';
+
+function setOrderFilter(f) {
+  orderFilter = f;
+  ['open','shipped','all'].forEach(function(k){
+    document.getElementById('of-' + k).classList.remove('primary');
+  });
+  document.getElementById('of-' + (f === 'paid' ? 'open' : f === 'shipped' ? 'shipped' : 'all'))
+    .classList.add('primary');
+  loadOrders();
+}
+
+function fmtAddr(a) {
+  if (!a) return '—';
+  return [a.line1, a.line2, [a.postal_code, a.city].filter(Boolean).join(' '), a.country]
+    .filter(Boolean).map(esc).join('<br>');
+}
+
+function orderPlain(o) {
+  const a = o.shipping_address || {};
+  return [o.customer_name, a.line1, a.line2, [a.postal_code, a.city].filter(Boolean).join(' '), a.country]
+    .filter(Boolean).join('\n');
+}
+
+async function copyAddress(id) {
+  const o = ordersCache.find(function(x){ return x.id === id; });
+  if (!o) return;
+  try {
+    await navigator.clipboard.writeText(orderPlain(o));
+    toast('Adresse kopiert ✓');
+  } catch { toast('Kopieren nicht möglich — bitte markieren', 'err'); }
+}
+
+let ordersCache = [];
+
+async function loadOrders() {
+  const el = document.getElementById('orderList');
+  if (!el) return;
+  const q = orderFilter === 'all'
+    ? 'status=in.(paid,shipped)'
+    : 'status=eq.' + orderFilter;
+  try {
+    const data = await sb('/rest/v1/orders?' + q + '&order=created_at.desc&select=*');
+    ordersCache = data || [];
+    if (!ordersCache.length) {
+      el.innerHTML = '<div class="empty">'
+        + (orderFilter === 'paid' ? 'Keine offenen Bestellungen 🎉' : 'Nichts gefunden')
+        + '</div>';
+      return;
+    }
+    el.innerHTML = '<div class="item-list">' + ordersCache.map(function(o){
+      const items = (o.items || []).map(function(i){
+        return esc(i.qty + '× ' + i.name + (i.size ? ' (' + i.size + ')' : ''));
+      }).join('<br>') || '<em style="color:var(--muted)">siehe Stripe</em>';
+      const d = new Date(o.created_at).toLocaleDateString('de-DE',
+        { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit' });
+      return `
+      <div class="item" style="align-items:flex-start">
+        <div class="item-info">
+          <div class="item-main">${esc(o.customer_name || o.email || 'Unbekannt')}
+            <span style="font-family:'Space Mono',monospace;font-size:.55rem;color:var(--muted);margin-left:.5rem">${esc(d)}</span>
+          </div>
+          <div class="item-meta" style="margin-top:.4rem;line-height:1.7">${items}</div>
+          <div class="item-meta" style="margin-top:.4rem;line-height:1.6">${fmtAddr(o.shipping_address)}</div>
+          <div class="item-meta" style="margin-top:.4rem">
+            ${esc(o.email || '')} · Summe ${centsToEuro(o.total_cents || 0)} €
+            (davon Versand ${centsToEuro(o.shipping_cents || 0)} €)
+          </div>
+          ${o.note ? `<div class="item-meta" style="margin-top:.4rem;color:#e0a030">⚠ ${esc(o.note)}</div>` : ''}
+        </div>
+        <span class="item-badge ${o.status === 'shipped' ? 'badge-past' : 'badge-up'}">
+          ${o.status === 'shipped' ? 'Versendet' : 'Offen'}
+        </span>
+        <div class="item-actions">
+          <button class="btn" onclick="copyAddress('${o.id}')">Adresse kopieren</button>
+          ${o.status === 'shipped'
+            ? `<button class="btn" onclick="markShipped('${o.id}', false)">Zurücksetzen</button>`
+            : `<button class="btn primary" onclick="markShipped('${o.id}', true)">Als versendet markieren</button>`}
+        </div>
+      </div>`;
+    }).join('') + '</div>';
+  } catch(e) {
+    el.innerHTML = '<div class="empty">Fehler: ' + esc(e.message) + '</div>';
+  }
+}
+
+async function markShipped(id, shipped) {
+  try {
+    await sb('/rest/v1/orders?id=eq.' + id, 'PATCH', {
+      status: shipped ? 'shipped' : 'paid',
+      shipped_at: shipped ? new Date().toISOString() : null
+    });
+    toast(shipped ? 'Als versendet markiert ✓' : 'Zurückgesetzt');
+    loadOrders();
   } catch(e) { toast(e.message, 'err'); }
 }
 
