@@ -17,26 +17,38 @@ function json(body: unknown) {
 // ── Versandstaffelung ────────────────────────────────────────────────
 // Jedes Produkt hat eine shipping_class. Für den Warenkorb gilt die
 // höchste Klasse; ab 4 Artikeln geht es eine Stufe hoch.
-// Beträge über Secrets überschreibbar (Werte in Cent, inkl. Verpackung).
+// Beträge inkl. Verpackung, pro Zielland. Über Secrets überschreibbar,
+// z.B. SHIP_DE_PAKET_CENTS=1050.
 const CLASS_ORDER = ['brief', 'paeckchen', 'paket'] as const;
 type ShipClass = typeof CLASS_ORDER[number];
 
-function shippingCents(cls: ShipClass): number {
-  const envName = {
-    brief: 'SHIP_BRIEF_CENTS',
-    paeckchen: 'SHIP_PAECKCHEN_CENTS',
-    paket: 'SHIP_PAKET_CENTS',
-  }[cls];
-  const fallback = { brief: 250, paeckchen: 450, paket: 650 }[cls];
-  const v = parseInt(Deno.env.get(envName) || '');
-  return Number.isFinite(v) && v >= 0 ? v : fallback;
+// 'pickup' = Abholung beim Konzert in Berlin: kein Versand, keine Adresse
+type Dest = 'DE' | 'AT' | 'pickup';
+
+const RATES: Record<'DE' | 'AT', Record<ShipClass, number>> = {
+  // Porto Stand Okt 2026: Großbrief 1,80 / Päckchen S 4,19 / Paket 5kg 7,69
+  DE: { brief: 250, paeckchen: 550, paket: 950 },
+  // Österreich: Großbrief Int. 3,30 / Päckchen XS 6,99 / Päckchen M 10,49
+  AT: { brief: 400, paeckchen: 900, paket: 1300 },
+};
+
+const DEST_LABEL: Record<Dest, string> = {
+  DE: 'Versand & Verpackung',
+  AT: 'Versand & Verpackung (Österreich)',
+  pickup: 'Abholung',
+};
+
+function shippingCents(dest: 'DE' | 'AT', cls: ShipClass): number {
+  const v = parseInt(Deno.env.get(`SHIP_${dest}_${cls.toUpperCase()}_CENTS`) || '');
+  return Number.isFinite(v) && v >= 0 ? v : RATES[dest][cls];
 }
 
-function resolveShipping(classes: ShipClass[], totalQty: number): number {
+function resolveShipping(dest: Dest, classes: ShipClass[], totalQty: number): number {
+  if (dest === 'pickup') return 0;
   let rank = 0;
   for (const c of classes) rank = Math.max(rank, CLASS_ORDER.indexOf(c));
   if (totalQty > 3) rank = Math.min(rank + 1, CLASS_ORDER.length - 1);
-  return shippingCents(CLASS_ORDER[rank]);
+  return shippingCents(dest, CLASS_ORDER[rank]);
 }
 
 // Verfügbarer Bestand für ein Produkt (null = unbegrenzt)
@@ -65,10 +77,12 @@ Deno.serve(async (req: Request) => {
   };
 
   let items: { id: string; quantity: number; size?: string }[];
+  let dest: Dest = 'DE';
   try {
     const body = await req.json();
     items = body.items;
     if (!Array.isArray(items) || !items.length) throw new Error();
+    if (body.dest === 'AT' || body.dest === 'pickup') dest = body.dest;
   } catch {
     return json({ ok: false, error: 'invalid_request' });
   }
@@ -88,10 +102,12 @@ Deno.serve(async (req: Request) => {
   params.set('mode', 'payment');
   params.set('success_url', 'https://youlity.de/shop/?status=success');
   params.set('cancel_url', 'https://youlity.de/shop/?status=cancel');
-  // Nur EU-Inland — die Schweiz braucht Zollerklärung und anderes Porto
-  ['DE', 'AT'].forEach((c, i) =>
-    params.set(`shipping_address_collection[allowed_countries][${i}]`, c)
-  );
+  // Lieferland fest auf die Auswahl aus dem Warenkorb begrenzen — sonst
+  // könnte jemand den DE-Tarif wählen und eine AT-Adresse eintragen.
+  // Bei Abholung wird gar keine Adresse abgefragt.
+  if (dest !== 'pickup') {
+    params.set('shipping_address_collection[allowed_countries][0]', dest);
+  }
 
   const orderItems: any[] = [];
   const classes: ShipClass[] = [];
@@ -142,12 +158,16 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  const ship = resolveShipping(classes, totalQty);
+  const ship = resolveShipping(dest, classes, totalQty);
   if (ship > 0) {
     params.set('shipping_options[0][shipping_rate_data][type]', 'fixed_amount');
     params.set('shipping_options[0][shipping_rate_data][fixed_amount][amount]', String(ship));
     params.set('shipping_options[0][shipping_rate_data][fixed_amount][currency]', 'eur');
-    params.set('shipping_options[0][shipping_rate_data][display_name]', 'Versand & Verpackung');
+    params.set('shipping_options[0][shipping_rate_data][display_name]', DEST_LABEL[dest]);
+  }
+  if (dest === 'pickup') {
+    params.set('custom_text[submit][message]',
+      'Abholung bei einem unserer Konzerte in Berlin — wir melden uns per E-Mail mit den nächsten Terminen.');
   }
 
   // Bestellung als 'pending' anlegen — der Webhook macht daraus 'paid'
@@ -161,6 +181,7 @@ Deno.serve(async (req: Request) => {
       subtotal_cents: subtotal,
       shipping_cents: ship,
       total_cents: subtotal + ship,
+      note: dest === 'pickup' ? 'ABHOLUNG in Berlin — nicht verschicken' : null,
     }),
   });
   if (orderRes.ok) {

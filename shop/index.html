@@ -115,6 +115,11 @@
     .cart-total{display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:.1em;}
     .cart-total strong{color:var(--pink);}
     .cart-hint{font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.1em;color:var(--muted);line-height:1.6;}
+    .cart-dest{display:flex;flex-direction:column;gap:.4rem;}
+    .cart-dest span{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);}
+    .cart-dest select{background:var(--bg);color:var(--text);border:1px solid var(--border);padding:.6rem .7rem;font-family:'Space Mono',monospace;font-size:.6rem;outline:none;width:100%;cursor:pointer;}
+    .cart-dest select:focus{border-color:var(--pink);}
+    .cart-dest option{background:var(--bg);}
     .cart-err{display:none;font-family:'Space Mono',monospace;font-size:.58rem;color:#e74c3c;line-height:1.6;}
     .cart-err.show{display:block;}
     .checkout-btn{font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.22em;text-transform:uppercase;padding:.95rem;border:1px solid var(--pink);background:var(--pink-glow);color:var(--pink);cursor:pointer;transition:all .2s;width:100%;}
@@ -183,7 +188,15 @@
   <div class="cart-items" id="cartItems"></div>
   <div class="cart-foot">
     <div class="cart-total"><span>Zwischensumme</span><strong id="cartTotal">0,00 €</strong></div>
-    <div class="cart-hint">Versand &amp; Verpackung wird im nächsten Schritt berechnet.<br>Versand nach Deutschland &amp; Österreich.</div>
+    <label class="cart-dest">
+      <span>Lieferung</span>
+      <select id="cartDest">
+        <option value="DE">Versand nach Deutschland</option>
+        <option value="AT">Versand nach Österreich</option>
+        <option value="pickup">Abholung beim Konzert (Berlin) — gratis</option>
+      </select>
+    </label>
+    <div class="cart-hint" id="cartHint"></div>
     <div class="cart-err" id="cartErr"></div>
     <button class="checkout-btn" id="checkoutBtn" onclick="checkout()">Zur Kasse</button>
   </div>
@@ -388,6 +401,28 @@ function renderCart() {
   document.getElementById('checkoutBtn').disabled = false;
 }
 
+// ── LIEFERUNG ────────────────────────────────────────────────────────
+// Die Auswahl entscheidet über den Versandtarif UND darüber, welches
+// Land Stripe im Checkout überhaupt zulässt.
+const destSel = document.getElementById('cartDest');
+const DEST_HINT = {
+  DE: 'Versand &amp; Verpackung wird im nächsten Schritt berechnet.<br>2,50 € · 5,50 € · 9,50 € je nach Größe.',
+  AT: 'Versand &amp; Verpackung wird im nächsten Schritt berechnet.<br>4,00 € · 9,00 € · 13,00 € je nach Größe.',
+  pickup: 'Kein Versand — du holst bei einem unserer Konzerte in Berlin ab.<br>Wir melden uns per E-Mail mit den nächsten Terminen.'
+};
+function getDest() {
+  const v = localStorage.getItem('youlity-dest');
+  return (v === 'AT' || v === 'pickup') ? v : 'DE';
+}
+function applyDest() {
+  const d = destSel.value;
+  localStorage.setItem('youlity-dest', d);
+  document.getElementById('cartHint').innerHTML = DEST_HINT[d];
+}
+destSel.value = getDest();
+destSel.addEventListener('change', applyDest);
+applyDest();
+
 function openCart()  { document.getElementById('cart').classList.add('open'); document.getElementById('cartOverlay').classList.add('open'); }
 function closeCart() { document.getElementById('cart').classList.remove('open'); document.getElementById('cartOverlay').classList.remove('open'); }
 
@@ -426,7 +461,10 @@ async function checkout() {
         'apikey': SUPABASE_ANON,
         'Authorization': 'Bearer ' + SUPABASE_ANON
       },
-      body: JSON.stringify({ items: cart.map(i => ({ id: i.id, quantity: i.qty, size: i.size || undefined })) })
+      body: JSON.stringify({
+        dest: destSel.value,
+        items: cart.map(i => ({ id: i.id, quantity: i.qty, size: i.size || undefined }))
+      })
     });
     const data = await res.json();
     if (data.ok && data.url) { window.location.href = data.url; return; }
