@@ -66,15 +66,11 @@
     @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 
     /* ÜBER UNS */
-    #about{padding:10rem 0;}
-    .about-grid{display:grid;grid-template-columns:1fr 1.6fr;gap:6rem;align-items:start;}
+    #about{padding:8rem 0;}
+    .about-wrap{max-width:760px;}
     .about-text{font-size:1.15rem;line-height:1.85;color:var(--muted);font-weight:300;}
     .about-text strong{color:var(--text);font-weight:400;}
     .about-text+.about-text{margin-top:1.5rem;}
-    .stats{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:3rem;}
-    .stat{border:1px solid var(--border);padding:1.4rem;background:var(--surface);}
-    .stat .n{font-family:'Bebas Neue',sans-serif;font-size:3.2rem;color:var(--pink);line-height:1;}
-    .stat .l{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-top:.4rem;}
     .pill-row{display:flex;gap:.8rem;margin-top:2rem;flex-wrap:wrap;}
     .pill{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;padding:.55rem 1.1rem;border:1px solid var(--border);color:var(--muted);text-decoration:none;transition:all .2s;}
     .pill:hover{border-color:var(--pink);color:var(--pink);background:var(--pink-glow);}
@@ -261,6 +257,7 @@
     .mc-info{padding:1.2rem 1.5rem;}
     .mc-name{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:.04em;color:var(--text);}
     .mc-price{font-family:'Space Mono',monospace;font-size:.62rem;color:var(--muted);margin-top:.2rem;}
+    .shop-cta{display:inline-block;padding:.8rem 2rem;}
 
     /* KONTAKT */
     #contact{padding:8rem 0;text-align:center;}
@@ -283,13 +280,47 @@
       nav{padding:1.2rem 1.5rem;}nav.scrolled{padding:.8rem 1.5rem;}
       .nav-links{display:none;flex-direction:column;position:absolute;top:100%;left:0;right:0;background:rgba(7,5,15,.97);padding:2rem;gap:1.5rem;border-bottom:1px solid var(--border);}
       .nav-links.open{display:flex;}.nav-toggle{display:flex;}
-      .about-grid{grid-template-columns:1fr;gap:3rem;}
       .rep-grid{grid-template-columns:1fr;gap:2rem;}
-      .h-grid{grid-template-columns:1fr;}
+      .h-grid{grid-template-columns:repeat(2,1fr);}
+      /* ungerade Anzahl → leere Zelle nicht rosa, sondern Hintergrund */
+      .h-grid:has(> .h-item:last-child:nth-child(odd):not([style]))::after{content:'';background:var(--bg);}
       .c-item{grid-template-columns:70px 1fr;}.c-tag{display:none;}
       .p-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:140px;}
       .p-item{grid-column:span 1!important;grid-row:span 1!important;}
       footer{padding:1.5rem;flex-direction:column;text-align:center;}
+    }
+
+    /* HANDY — kompakter, damit die Seite nicht endlos lang wird.
+       Greift nur unter 600px, Desktop & Tablet bleiben unverändert. */
+    @media(max-width:600px){
+      .inner{padding:0 1.25rem;}
+      #concerts,#merch,#about,#videos,#history,#repertoire,#members,#photos,#contact{padding:4.5rem 0;}
+      .s-title{margin-bottom:2rem;}
+
+      .about-text{font-size:1rem;line-height:1.75;}
+      .c-item{padding:1.1rem 1.2rem;gap:1.2rem;}
+
+      /* Mitglieder: 2 nebeneinander */
+      .members-grid{grid-template-columns:repeat(2,1fr);}
+      .members-grid:has(> .m-card:last-child:nth-child(odd))::after{content:'';background:var(--bg);}
+      .m-card{padding:1rem .9rem 1.1rem;}
+      .m-photo{margin-bottom:.75rem;font-size:1.8rem;}
+      .m-inst{font-size:.5rem;letter-spacing:.12em;overflow-wrap:anywhere;}
+      .m-name{font-size:1.15rem;line-height:1.1;}
+
+      /* Merch: alle 3 Kacheln in einer Reihe */
+      .mc-grid{grid-template-columns:repeat(3,1fr);}
+      .mc-img{font-size:1.8rem;}
+      .mc-over span{font-size:.42rem;letter-spacing:.14em;padding:.3rem .45rem;text-align:center;}
+      .mc-info{padding:.7rem .65rem .8rem;}
+      .mc-name{font-size:1rem;}
+      .mc-price{font-size:.52rem;}
+
+      /* Auftritte & Preise */
+      .h-item{padding:1.2rem 1rem;}
+      .h-year{font-size:2.1rem;}
+      .h-event{font-size:.85rem;}
+      .h-place,.h-award{font-size:.5rem;}
     }
 
     /* THEMES */
@@ -330,10 +361,10 @@
     <span></span><span></span><span></span>
   </button>
   <ul class="nav-links" id="navLinks">
-    <li><a href="#about">Über uns</a></li>
     <li><a href="#concerts">Konzerte</a></li>
     <li><a href="#releases">Release</a></li>
     <li><a href="#merch">Merch</a></li>
+    <li><a href="#about">Über uns</a></li>
     <li><a href="#videos">Videos</a></li>
     <li><a href="#members">Band</a></li>
     <li><a href="#photos">Fotos</a></li>
@@ -356,31 +387,6 @@
   <div class="hero-scroll">
     <span>Scroll</span>
     <div class="scroll-line"></div>
-  </div>
-</section>
-
-<!-- ÜBER UNS -->
-<section id="about">
-  <div class="inner">
-    <div class="about-grid">
-      <div>
-        <div class="s-tag rv">Über uns</div>
-        <h2 class="s-title rv d1">WIR<br>SIND<br><span class="o">YOULITY</span></h2>
-        <div class="stats">
-          <div class="stat rv d2"><div class="n" id="memberCount">~15+</div><div class="l">Mitglieder</div></div>
-          <div class="stat rv d3"><div class="n">∞</div><div class="l">Genres</div></div>
-          <div class="stat rv d4"><div class="n">BLN</div><div class="l">Heimatstadt</div></div>
-          <div class="stat rv d5"><div class="n">★★</div><div class="l">Ausgezeichnet</div></div>
-        </div>
-      </div>
-      <div class="rv d2">
-        <div id="aboutText"></div>
-        <div class="pill-row" style="margin-top:2rem;">
-          <a href="https://www.instagram.com/youlity.bigband" target="_blank" class="pill">Instagram</a>
-          <a href="https://www.youtube.com/@YoulityBigbandBln" target="_blank" class="pill">YouTube</a>
-        </div>
-      </div>
-    </div>
   </div>
 </section>
 
@@ -429,8 +435,34 @@
       <div class="mc rv d3"><div class="mc-img">💿<div class="mc-over"><span>Coming Soon</span></div></div><div class="mc-info"><div class="mc-name">Vinyl / CD</div><div class="mc-price">25,00 €</div></div></div>
     </div>
     <div class="rv d4" style="margin-top:2.5rem;text-align:center">
-      <a href="/shop/" class="s-btn a" style="display:inline-block;text-decoration:none;padding:.8rem 2rem">Zum Shop →</a>
+      <a href="/shop/" class="pill shop-cta">Zum Shop →</a>
     </div>
+  </div>
+</section>
+
+<!-- ÜBER UNS -->
+<section id="about">
+  <div class="inner">
+    <div class="about-wrap">
+      <div class="s-tag rv">Über uns</div>
+      <div class="rv d1">
+        <div id="aboutText"></div>
+        <div class="pill-row">
+          <a href="https://www.instagram.com/youlity.bigband" target="_blank" class="pill">Instagram</a>
+          <a href="https://www.youtube.com/@YoulityBigbandBln" target="_blank" class="pill">YouTube</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VIDEOS -->
+<section id="videos">
+  <div class="inner">
+    <div class="s-tag rv">YouTube</div>
+    <h2 class="s-title rv d1">VIDEOS</h2>
+    <div class="v-grid" id="videoGrid"></div>
+    <div class="yt-link rv d4"><a href="https://www.youtube.com/@YoulityBigbandBln" target="_blank" class="pill">Alle Videos auf YouTube →</a></div>
   </div>
 </section>
 
@@ -462,16 +494,6 @@
         <div class="rep-pane" id="rep-original"><p class="rep-text"></p></div>
       </div>
     </div>
-  </div>
-</section>
-
-<!-- VIDEOS -->
-<section id="videos">
-  <div class="inner">
-    <div class="s-tag rv">YouTube</div>
-    <h2 class="s-title rv d1">VIDEOS</h2>
-    <div class="v-grid" id="videoGrid"></div>
-    <div class="yt-link rv d4"><a href="https://www.youtube.com/@YoulityBigbandBln" target="_blank" class="pill">Alle Videos auf YouTube →</a></div>
   </div>
 </section>
 
@@ -763,9 +785,6 @@ async function loadMembers() {
       <div class="m-name">${esc(m.name)}</div>
       ${m.bio ? `<div class="about-text" style="font-size:.85rem;margin-top:.5rem">${esc(m.bio)}</div>` : ''}
     </div>`).join('');
-
-  const countEl = document.getElementById('memberCount');
-  if (countEl) countEl.textContent = data.length + '+';
 }
 
 async function loadHistory() {
@@ -797,9 +816,11 @@ async function loadContent() {
   if (aboutEl) {
     const p1 = map['about_p1'] || 'Youlity ist eine Berliner Bigband — Text folgt bald.';
     const p2 = map['about_p2'] || '';
+    // Leerzeilen im CMS-Text = neuer Absatz (einfache Zeilenumbrüche bleiben Fließtext)
+    const paras = p1.split(/\n\s*\n/).map(s => s.trim()).filter(Boolean);
     aboutEl.innerHTML =
-      `<p class="about-text"><strong>Youlity</strong> ${esc(p1)}</p>` +
-      (p2 ? `<p class="about-text" style="margin-top:1.5rem">${esc(p2)}</p>` : '');
+      paras.map((t, i) => `<p class="about-text">${i === 0 ? '<strong>Youlity</strong> ' : ''}${esc(t)}</p>`).join('') +
+      (p2 ? `<p class="about-text">${esc(p2)}</p>` : '');
   }
 
   // Repertoire
