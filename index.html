@@ -59,11 +59,15 @@
     .hero-tag{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.35em;color:var(--pink);text-transform:uppercase;margin-bottom:1.5rem;opacity:0;animation:fadeUp .8s ease 2.8s forwards;}
     .hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(5.5rem,22vw,17rem);line-height:.86;letter-spacing:.02em;color:var(--text);opacity:0;animation:fadeUp .9s cubic-bezier(.16,1,.3,1) 3s forwards;}
     .hero-sub{margin-top:1.8rem;font-size:1.05rem;font-weight:300;letter-spacing:.04em;color:var(--muted);opacity:0;animation:fadeUp .8s ease 3.2s forwards;}
-    .hero-scroll{position:absolute;bottom:3rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.6rem;opacity:0;animation:fadeUp .8s ease 3.7s forwards;}
+    /* Eigene Keyframes: das allgemeine fadeUp endet auf translateY(0) und
+       würde das translateX(-50%) überschreiben — der Block stünde dann um
+       seine halbe Breite zu weit rechts. */
+    .hero-scroll{position:absolute;bottom:3rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.6rem;opacity:0;animation:fadeUpCentered .8s ease 3.7s forwards;}
     .hero-scroll span{font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.25em;color:var(--muted);text-transform:uppercase;}
     .scroll-line{width:1px;height:52px;background:linear-gradient(to bottom,var(--pink),transparent);animation:scrollP 2.2s ease-in-out infinite;}
     @keyframes scrollP{0%,100%{opacity:.3;transform:scaleY(1)}50%{opacity:1;transform:scaleY(1.15)}}
     @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes fadeUpCentered{from{opacity:0;transform:translate(-50%,18px)}to{opacity:1;transform:translate(-50%,0)}}
 
     /* ÜBER UNS */
     #about{padding:8rem 0;}
