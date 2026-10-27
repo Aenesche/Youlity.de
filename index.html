@@ -756,6 +756,16 @@ function gfLayout(){
   gfUpdate();
 }
 
+// Scrollposition, bei der die Platte gerade zu (p = 0) bzw. ganz
+// aufgeklappt ist (p = 1). Braucht die Wischgeste, um an beiden Enden
+// zu stoppen, statt in das normale Seitenscrollen überzugehen.
+function gfScrollRange(){
+  const padTop   = parseFloat(getComputedStyle(releases).paddingTop) || 0;
+  const naturalY = releases.getBoundingClientRect().top + padTop;
+  const start    = window.scrollY + naturalY - gfTop;
+  return { start, end: start + gfRunway.offsetHeight };
+}
+
 // Fortschritt 0…1 = wie weit die Runway schon durchgescrollt ist,
 // während das Gatefold angeheftet ist
 function gfUpdate(){
@@ -831,7 +841,16 @@ const GF_CLOSED_ZOOM = window.matchMedia('(max-width: 600px)').matches ? 1.25 : 
     dragged = true;
     // ein Wisch über die volle Plattenbreite ≈ einmal komplett aufklappen
     const factor = gfRunway.offsetHeight / Math.max(1, gfEl.offsetWidth);
-    window.scrollBy(0, -dx * factor);
+    // Der Wisch blättert ausschließlich die Platte um: am Anfang und am Ende
+    // der Klappstrecke bleibt er stehen und schiebt die Seite nicht weiter.
+    // Weiterscrollen geht dann wieder ganz normal hoch/runter.
+    // Steht die Seite schon vor oder hinter der Strecke, darf der Wisch sie
+    // auch nicht dorthin zurückreissen — deshalb cur mit in die Grenzen.
+    const { start, end } = gfScrollRange();
+    const cur  = window.scrollY;
+    const want = cur - dx * factor;
+    const lo = Math.min(start, cur), hi = Math.max(end, cur);
+    window.scrollTo(0, Math.max(lo, Math.min(hi, want)));
     sx = x; sy = y;
   }, { passive: false });
 
