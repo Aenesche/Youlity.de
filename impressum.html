@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, follow" />
+  <title>Impressum – Youlity</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=Space+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/legal.css">
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">Youlity</a>
+  <a href="/" class="nav-back">← Zurück zur Website</a>
+  <div class="theme-switch" id="themeSwitch">
+    <button class="theme-btn active" data-t="dark"  title="Dark">◑</button>
+    <button class="theme-btn"        data-t="light" title="Light">○</button>
+    <button class="theme-btn"        data-t="solar" title="Solarized">◐</button>
+  </div>
+</nav>
+
+<main>
+  <div class="page-tag">Rechtliches</div>
+  <h1>IMPRES<span class="o">SUM</span></h1>
+
+  <h2>Angaben gemäß § 5 DDG</h2>
+  <div class="box">
+    <p><strong>Bigband Youlity</strong></p>
+    <p>Vertreten durch: Ulrike Arzet</p>
+    <p>Anschrift: <span class="todo">[Straße Nr., PLZ Berlin — bitte ergänzen]</span></p>
+  </div>
+
+  <h2>Kontakt</h2>
+  <p>
+    E-Mail: <a href="mailto:youlity.bigband@gmail.com">youlity.bigband@gmail.com</a><br>
+    Website: <a href="https://youlity.de">youlity.de</a>
+  </p>
+
+  <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
+  <div class="box">
+    <p>Ulrike Arzet</p>
+    <p>Anschrift: <span class="todo">[wie oben — bitte ergänzen]</span></p>
+  </div>
+
+  <h2>Verbraucherstreitbeilegung</h2>
+  <p>
+    Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor
+    einer Verbraucherschlichtungsstelle teilzunehmen.
+  </p>
+
+  <h2>Haftung für Inhalte</h2>
+  <p>
+    Als Diensteanbieter sind wir für eigene Inhalte auf diesen Seiten nach den
+    allgemeinen Gesetzen verantwortlich. Wir sind jedoch nicht verpflichtet,
+    übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach
+    Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen.
+    Verpflichtungen zur Entfernung oder Sperrung der Nutzung von Informationen
+    nach den allgemeinen Gesetzen bleiben hiervon unberührt. Eine diesbezügliche
+    Haftung ist erst ab dem Zeitpunkt der Kenntnis einer konkreten Rechtsverletzung
+    möglich. Bei Bekanntwerden entsprechender Rechtsverletzungen entfernen wir
+    diese Inhalte umgehend.
+  </p>
+
+  <h2>Haftung für Links</h2>
+  <p>
+    Unser Angebot enthält Links zu externen Websites Dritter, auf deren Inhalte wir
+    keinen Einfluss haben. Deshalb können wir für diese fremden Inhalte auch keine
+    Gewähr übernehmen. Für die Inhalte der verlinkten Seiten ist stets der jeweilige
+    Anbieter oder Betreiber verantwortlich. Bei Bekanntwerden von Rechtsverletzungen
+    entfernen wir derartige Links umgehend.
+  </p>
+
+  <h2>Urheberrecht</h2>
+  <p>
+    Die durch die Seitenbetreiber erstellten Inhalte und Werke auf diesen Seiten
+    unterliegen dem deutschen Urheberrecht. Die Vervielfältigung, Bearbeitung,
+    Verbreitung und jede Art der Verwertung außerhalb der Grenzen des Urheberrechts
+    bedürfen der schriftlichen Zustimmung des jeweiligen Autors bzw. Erstellers.
+  </p>
+  <p>
+    Die auf dieser Website verwendeten Musikaufnahmen enthalten Arrangements und
+    Kompositionen Dritter; die entsprechenden Rechte liegen bei den jeweiligen
+    Rechteinhabern. Aufführungs- und Vervielfältigungsrechte sind über die GEMA
+    abgegolten.
+  </p>
+
+  <div class="meta">Stand: Oktober 2026</div>
+</main>
+
+<footer>
+  <div class="f-copy">© 2026 Youlity · Berlin</div>
+  <div class="f-links">
+    <a href="/">Website</a>
+    <a href="/shop/">Shop</a>
+    <a href="/datenschutz.html">Datenschutz</a>
+    <a href="mailto:youlity.bigband@gmail.com">Kontakt</a>
+  </div>
+</footer>
+
+<script>
+// Theme-Auswahl der Hauptseite übernehmen
+const themeBtns = document.querySelectorAll('.theme-btn');
+const saved = localStorage.getItem('youlity-theme') || 'dark';
+document.documentElement.dataset.theme = saved;
+themeBtns.forEach(b => b.classList.toggle('active', b.dataset.t === saved));
+themeBtns.forEach(btn => btn.addEventListener('click', () => {
+  const t = btn.dataset.t;
+  document.documentElement.dataset.theme = t;
+  localStorage.setItem('youlity-theme', t);
+  themeBtns.forEach(b => b.classList.toggle('active', b.dataset.t === t));
+}));
+</script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+/* Gemeinsames Styling für Impressum & Datenschutz —
+   übernimmt Farben, Schriften und Theme-Umschaltung der Hauptseite. */
+:root {
+  --bg:#07050f; --surface:#0e0b1a; --pink:#ed24c8; --pink-dim:#5c1049;
+  --pink-glow:rgba(237,36,200,0.12); --text:#f0eaf8; --muted:#6b607a;
+  --border:rgba(237,36,200,0.18);
+}
+[data-theme="light"] {
+  --bg:#fafafa; --surface:#f0edf6; --pink:#c41aaa; --pink-dim:#8a1278;
+  --pink-glow:rgba(196,26,170,0.1); --text:#1a0d2e; --muted:#7a6a8a;
+  --border:rgba(180,20,150,0.2);
+}
+[data-theme="solar"] {
+  --bg:#fdf6e3; --surface:#eee8d5; --pink:#b5006e; --pink-dim:#7a004a;
+  --pink-glow:rgba(181,0,110,0.1); --text:#3a2a1a; --muted:#8a7060;
+  --border:rgba(150,80,0,0.2);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;
+     overflow-x:hidden;min-height:100vh;display:flex;flex-direction:column;}
+
+/* NAV */
+nav{display:flex;align-items:center;justify-content:space-between;gap:1rem;
+    padding:1.2rem 3rem;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:.12em;
+          color:var(--text);text-decoration:none;}
+.nav-back{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.18em;
+          text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s;}
+.nav-back:hover{color:var(--pink);}
+.theme-switch{display:flex;border:1px solid var(--border);border-radius:4px;
+              overflow:hidden;background:var(--surface);}
+.theme-btn{background:none;border:none;cursor:pointer;padding:.35rem .6rem;
+           font-size:.8rem;color:var(--muted);transition:background .2s,color .2s;line-height:1;}
+.theme-btn+.theme-btn{border-left:1px solid var(--border);}
+.theme-btn.active{background:var(--pink-glow);color:var(--pink);}
+.theme-btn:hover:not(.active){color:var(--text);}
+
+/* INHALT */
+main{flex:1;max-width:760px;margin:0 auto;padding:4.5rem 2rem 6rem;width:100%;}
+.page-tag{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.3em;
+          color:var(--pink);text-transform:uppercase;margin-bottom:1rem;}
+h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.6rem,8vw,5rem);line-height:.9;
+   letter-spacing:.02em;color:var(--text);margin-bottom:2.5rem;}
+h1 .o{-webkit-text-stroke:1px var(--pink);color:transparent;}
+h2{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:.05em;
+   color:var(--text);margin:2.75rem 0 .9rem;}
+h3{font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.2em;
+   text-transform:uppercase;color:var(--pink);margin:1.75rem 0 .6rem;}
+p,li{font-size:.98rem;line-height:1.8;color:var(--muted);font-weight:300;}
+p+p{margin-top:.9rem;}
+strong{color:var(--text);font-weight:500;}
+a{color:var(--pink);text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+a:hover{border-bottom-color:var(--pink);}
+ul{margin:.6rem 0 0 1.1rem;}
+li{margin-bottom:.45rem;}
+.box{border:1px solid var(--border);background:var(--surface);padding:1.5rem;margin-top:1rem;}
+.box p{margin:0;}
+.box p+p{margin-top:.4rem;}
+/* Noch zu ergänzende Angabe — sichtbar, damit sie nicht vergessen wird */
+.todo{color:var(--pink);border-bottom:1px dashed var(--pink);font-weight:500;}
+.meta{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.15em;
+      text-transform:uppercase;color:var(--muted);margin-top:3.5rem;
+      padding-top:1.5rem;border-top:1px solid var(--border);}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:2rem 3rem;display:flex;
+       justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;}
+.f-copy{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.15em;color:var(--muted);}
+.f-links{display:flex;gap:2rem;flex-wrap:wrap;}
+.f-links a{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.15em;
+           text-transform:uppercase;color:var(--muted);text-decoration:none;border:none;}
+.f-links a:hover{color:var(--pink);}
+
+@media(max-width:600px){
+  nav{padding:1rem 1.25rem;}
+  main{padding:3rem 1.25rem 4rem;}
+  h2{font-size:1.3rem;}
+  p,li{font-size:.92rem;line-height:1.75;}
+  footer{padding:1.5rem 1.25rem;flex-direction:column;text-align:center;}
+}
